@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C92A51B91BB09296002BE266 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C92A51B81BB09296002BE266 /* main.c */; };
+		C96B30661BB61DFE001C22BE /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30631BB61DFE001C22BE /* main.c */; settings = {ASSET_TAGS = (); }; };
+		C96B30671BB61DFE001C22BE /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = C96B30641BB61DFE001C22BE /* Makefile */; settings = {ASSET_TAGS = (); }; };
+		C96B307E1BB90B21001C22BE /* myMalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30691BB61F7F001C22BE /* myMalloc.c */; settings = {ASSET_TAGS = (); }; };
+		C96B307F1BB90B24001C22BE /* testMalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30701BB622CD001C22BE /* testMalloc.c */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -20,15 +23,38 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		C96B30751BB90B05001C22BE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C92A51B51BB09296002BE266 /* assignments */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = assignments; sourceTree = BUILT_PRODUCTS_DIR; };
-		C92A51B81BB09296002BE266 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		C96B30631BB61DFE001C22BE /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		C96B30641BB61DFE001C22BE /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		C96B30691BB61F7F001C22BE /* myMalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = myMalloc.c; sourceTree = "<group>"; };
+		C96B306A1BB61F7F001C22BE /* myMalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = myMalloc.h; sourceTree = "<group>"; };
+		C96B306C1BB62120001C22BE /* sftp-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "sftp-config.json"; path = "assignments/sftp-config.json"; sourceTree = "<group>"; };
+		C96B306E1BB62265001C22BE /* testMalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testMalloc.h; sourceTree = "<group>"; };
+		C96B30701BB622CD001C22BE /* testMalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testMalloc.c; sourceTree = "<group>"; };
+		C96B30771BB90B05001C22BE /* program1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program1; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		C92A51B21BB09296002BE266 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C96B30741BB90B05001C22BE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -41,7 +67,9 @@
 		C92A51AC1BB09296002BE266 = {
 			isa = PBXGroup;
 			children = (
-				C92A51B71BB09296002BE266 /* assignments */,
+				C96B306C1BB62120001C22BE /* sftp-config.json */,
+				C96B30681BB61E79001C22BE /* program1 */,
+				C96B30621BB61DFE001C22BE /* lab1 */,
 				C92A51B61BB09296002BE266 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,16 +78,31 @@
 			isa = PBXGroup;
 			children = (
 				C92A51B51BB09296002BE266 /* assignments */,
+				C96B30771BB90B05001C22BE /* program1 */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C92A51B71BB09296002BE266 /* assignments */ = {
+		C96B30621BB61DFE001C22BE /* lab1 */ = {
 			isa = PBXGroup;
 			children = (
-				C92A51B81BB09296002BE266 /* main.c */,
+				C96B30631BB61DFE001C22BE /* main.c */,
+				C96B30641BB61DFE001C22BE /* Makefile */,
 			);
-			path = assignments;
+			name = lab1;
+			path = assignments/lab1;
+			sourceTree = "<group>";
+		};
+		C96B30681BB61E79001C22BE /* program1 */ = {
+			isa = PBXGroup;
+			children = (
+				C96B30691BB61F7F001C22BE /* myMalloc.c */,
+				C96B306A1BB61F7F001C22BE /* myMalloc.h */,
+				C96B306E1BB62265001C22BE /* testMalloc.h */,
+				C96B30701BB622CD001C22BE /* testMalloc.c */,
+			);
+			name = program1;
+			path = assignments/program1;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -82,6 +125,23 @@
 			productReference = C92A51B51BB09296002BE266 /* assignments */;
 			productType = "com.apple.product-type.tool";
 		};
+		C96B30761BB90B05001C22BE /* program1 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C96B307B1BB90B06001C22BE /* Build configuration list for PBXNativeTarget "program1" */;
+			buildPhases = (
+				C96B30731BB90B05001C22BE /* Sources */,
+				C96B30741BB90B05001C22BE /* Frameworks */,
+				C96B30751BB90B05001C22BE /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = program1;
+			productName = program1;
+			productReference = C96B30771BB90B05001C22BE /* program1 */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -92,6 +152,9 @@
 				ORGANIZATIONNAME = "Elliot Fiske";
 				TargetAttributes = {
 					C92A51B41BB09296002BE266 = {
+						CreatedOnToolsVersion = 7.0;
+					};
+					C96B30761BB90B05001C22BE = {
 						CreatedOnToolsVersion = 7.0;
 					};
 				};
@@ -109,6 +172,7 @@
 			projectRoot = "";
 			targets = (
 				C92A51B41BB09296002BE266 /* assignments */,
+				C96B30761BB90B05001C22BE /* program1 */,
 			);
 		};
 /* End PBXProject section */
@@ -118,7 +182,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C92A51B91BB09296002BE266 /* main.c in Sources */,
+				C96B30671BB61DFE001C22BE /* Makefile in Sources */,
+				C96B30661BB61DFE001C22BE /* main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C96B30731BB90B05001C22BE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C96B307E1BB90B21001C22BE /* myMalloc.c in Sources */,
+				C96B307F1BB90B24001C22BE /* testMalloc.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,6 +279,7 @@
 		C92A51BD1BB09296002BE266 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = .;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -212,6 +287,23 @@
 		C92A51BE1BB09296002BE266 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = .;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		C96B307C1BB90B06001C22BE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C96B307D1BB90B06001C22BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -233,6 +325,15 @@
 			buildConfigurations = (
 				C92A51BD1BB09296002BE266 /* Debug */,
 				C92A51BE1BB09296002BE266 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C96B307B1BB90B06001C22BE /* Build configuration list for PBXNativeTarget "program1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C96B307C1BB90B06001C22BE /* Debug */,
+				C96B307D1BB90B06001C22BE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
