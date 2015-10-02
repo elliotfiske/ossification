@@ -18,11 +18,11 @@ void testLibraries();
  *  linked list we create when malloc happens
  */
 typedef struct MallocHeader {
-    char isFree;
-    struct MallocHeader *nextChunkInList;
+    char isFree, isLast;
+    struct MallocHeader *next;
     
-    size_t chunkSize;
-    char *data;
+    size_t dataSize;
+    void *data;
 } MallocHeader;
 
 #endif /* myMalloc_h */
