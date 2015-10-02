@@ -6,11 +6,11 @@
 //  Copyright © 2015 Elliot Fiske. All rights reserved.
 //
 
-#include "myMalloc.h"
+#include "malloc.h"
 #include <unistd.h>
-//#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <stdint.h>
 
 #define MEMORY_ALIGNMENT 16
 #define CHUNK_SIZE 64*1024
@@ -18,11 +18,6 @@
 /* How much spare free space we should have if we're going to split
  *  up a block that's been free'd */
 #define FREE_MARGIN sizeof(MallocHeader) * 2
-
-void *malloc(size_t size);
-void *realloc(void *ptr, size_t size);
-void free(void *ptr);
-void *calloc(size_t nmemb, size_t size);
 
 void *doSbrk(int increment);
 void *initMallocList();
@@ -50,62 +45,62 @@ void *testMalloc(size_t size) {
     return result;
 }
 
-int main(int argc, const char * argv[]) {
-    
-    
-    int *a, *b;
-    for (int i = 1; i < 20; i++) {
-        a = testMalloc(10 * i * i);
-        b = testMalloc(20 * i);
-        free(a);
-        free(b);
-    }
-
-    int *test1 = testMalloc(100);
-    int *test2 = testMalloc(200);
-    *test2 = 12345678;
-    realloc(test2, 15);
-    realloc(test2, 100);
-    int *test3 = testMalloc(14);
-    int *test4 = testMalloc(15);
-    int *test5 = testMalloc(15);
-    int *test6 = testMalloc(15);
-    int *test7 = testMalloc(7);
-    realloc(test2, 15);
-    int *test8 = testMalloc(CHUNK_SIZE * 20);
-    int *test9 = testMalloc(15);
-    int *test10 = testMalloc(15);
-    int *test11 = testMalloc(15);
-    
-    realloc(test2, 17);
-    
-    free(test1);
-    free(test9);
-    free(test8);
-    free(test10);
-    realloc(test3, 700);
-    int *test12 = testMalloc(60);
-    realloc(test2, CHUNK_SIZE * 30);
-    int *test13 = testMalloc(50);
-    int *test14 = testMalloc(50);
-    int *test15 = testMalloc(50);
-    int *test16 = testMalloc(50);
-    int *test17 = testMalloc(50);
-    int *test18 = testMalloc(50);
-    int *test19 = testMalloc(50);
-    int *test20 = testMalloc(50);
-    int *test21 = testMalloc(50);
-    int *test22 = testMalloc(50);
-    free(test13);
-    free(test14);
-    free(test16);
-    free(test15);
-    
-    int *test23 = testMalloc(50);
-    int *test24 = testMalloc(50);
-    int *test25 = testMalloc(50);
-    
-}
+//int main(int argc, const char * argv[]) {
+//    
+//    
+//    int *a, *b;
+//    for (int i = 1; i < 20; i++) {
+//        a = testMalloc(10 * i * i);
+//        b = testMalloc(20 * i);
+//        free(a);
+//        free(b);
+//    }
+//
+//    int *test1 = testMalloc(100);
+//    int *test2 = testMalloc(200);
+//    *test2 = 12345678;
+//    realloc(test2, 15);
+//    realloc(test2, 100);
+//    int *test3 = testMalloc(14);
+//    int *test4 = testMalloc(15);
+//    int *test5 = testMalloc(15);
+//    int *test6 = testMalloc(15);
+//    int *test7 = testMalloc(7);
+//    realloc(test2, 15);
+//    int *test8 = testMalloc(CHUNK_SIZE * 20);
+//    int *test9 = testMalloc(15);
+//    int *test10 = testMalloc(15);
+//    int *test11 = testMalloc(15);
+//    
+//    realloc(test2, 17);
+//    
+//    free(test1);
+//    free(test9);
+//    free(test8);
+//    free(test10);
+//    realloc(test3, 700);
+//    int *test12 = testMalloc(60);
+//    realloc(test2, CHUNK_SIZE * 30);
+//    int *test13 = testMalloc(50);
+//    int *test14 = testMalloc(50);
+//    int *test15 = testMalloc(50);
+//    int *test16 = testMalloc(50);
+//    int *test17 = testMalloc(50);
+//    int *test18 = testMalloc(50);
+//    int *test19 = testMalloc(50);
+//    int *test20 = testMalloc(50);
+//    int *test21 = testMalloc(50);
+//    int *test22 = testMalloc(50);
+//    free(test13);
+//    free(test14);
+//    free(test16);
+//    free(test15);
+//    
+//    int *test23 = testMalloc(50);
+//    int *test24 = testMalloc(50);
+//    int *test25 = testMalloc(50);
+//    
+//}
 
 /**
  * Gives you a chunk of memory on the heap! Guarenteed to be 16-byte
@@ -156,7 +151,8 @@ void free(void *ptr) {
     
     // Check if we should merge this freed block with the previous block
     if (prevBlock && prevBlock->isFree) {
-        printf("Merged with the guy behind me! His size: %zu, my size: %zu\n", prevBlock->dataSize, blockToFree->dataSize);
+        printf("Merged with the guy behind me! His size: %zu, my size: %zu\n",
+               prevBlock->dataSize, blockToFree->dataSize);
         prevBlock->next = blockToFree->next;
         prevBlock->dataSize += blockToFree->dataSize;
         prevBlock->isLast = blockToFree->isLast;
@@ -166,7 +162,8 @@ void free(void *ptr) {
     
     // Check if we should merge this freed block with the one after
     if (blockToFree->next && blockToFree->next->isFree) {
-        printf("Merged with the guy in front of me! His size: %zu, my size: %zu\n", blockToFree->next->dataSize, blockToFree->dataSize);
+printf("Merged with the guy in front of me! His size: %zu, my size: %zu\n",
+       blockToFree->next->dataSize, blockToFree->dataSize);
         blockToFree->dataSize += blockToFree->next->dataSize;
         blockToFree->isLast = blockToFree->next->isLast;
         

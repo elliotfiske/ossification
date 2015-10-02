@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		C96B30661BB61DFE001C22BE /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30631BB61DFE001C22BE /* main.c */; settings = {ASSET_TAGS = (); }; };
 		C96B30671BB61DFE001C22BE /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = C96B30641BB61DFE001C22BE /* Makefile */; settings = {ASSET_TAGS = (); }; };
-		C96B307E1BB90B21001C22BE /* myMalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30691BB61F7F001C22BE /* myMalloc.c */; settings = {ASSET_TAGS = (); }; };
+		C96B307E1BB90B21001C22BE /* malloc.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30691BB61F7F001C22BE /* malloc.c */; settings = {ASSET_TAGS = (); }; };
 		C96B307F1BB90B24001C22BE /* testMalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30701BB622CD001C22BE /* testMalloc.c */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
@@ -38,8 +38,8 @@
 		C92A51B51BB09296002BE266 /* assignments */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = assignments; sourceTree = BUILT_PRODUCTS_DIR; };
 		C96B30631BB61DFE001C22BE /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		C96B30641BB61DFE001C22BE /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		C96B30691BB61F7F001C22BE /* myMalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = myMalloc.c; sourceTree = "<group>"; };
-		C96B306A1BB61F7F001C22BE /* myMalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = myMalloc.h; sourceTree = "<group>"; };
+		C96B30691BB61F7F001C22BE /* malloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = malloc.c; sourceTree = "<group>"; };
+		C96B306A1BB61F7F001C22BE /* malloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = malloc.h; sourceTree = "<group>"; };
 		C96B306C1BB62120001C22BE /* sftp-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "sftp-config.json"; path = "assignments/sftp-config.json"; sourceTree = "<group>"; };
 		C96B306E1BB62265001C22BE /* testMalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testMalloc.h; sourceTree = "<group>"; };
 		C96B30701BB622CD001C22BE /* testMalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testMalloc.c; sourceTree = "<group>"; };
@@ -96,8 +96,8 @@
 		C96B30681BB61E79001C22BE /* program1 */ = {
 			isa = PBXGroup;
 			children = (
-				C96B30691BB61F7F001C22BE /* myMalloc.c */,
-				C96B306A1BB61F7F001C22BE /* myMalloc.h */,
+				C96B30691BB61F7F001C22BE /* malloc.c */,
+				C96B306A1BB61F7F001C22BE /* malloc.h */,
 				C96B306E1BB62265001C22BE /* testMalloc.h */,
 				C96B30701BB622CD001C22BE /* testMalloc.c */,
 			);
@@ -191,7 +191,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C96B307E1BB90B21001C22BE /* myMalloc.c in Sources */,
+				C96B307E1BB90B21001C22BE /* malloc.c in Sources */,
 				C96B307F1BB90B24001C22BE /* testMalloc.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,6 +336,7 @@
 				C96B307D1BB90B06001C22BE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
