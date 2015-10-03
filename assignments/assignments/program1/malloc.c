@@ -50,22 +50,22 @@ int main(int argc, const char * argv[]) {
 
 void debugMallocOutput(size_t reqSize, size_t actualSize, void *result) {
     if (getenv("DEBUG_MALLOC")) {
-        snprintf(debugOutputString,
-                 DEBUG_STR_SIZE, "MALLOC: malloc(%zu) => (ptr=%zu, size=%zu))",
-                 reqSize, (uintptr_t)result, actualSize);
-        puts(debugOutputString);
+//        snprintf(debugOutputString,
+//                 DEBUG_STR_SIZE, "MALLOC: malloc(%zu) => (ptr=%zu, size=%zu))",
+//                 reqSize, (uintptr_t)result, actualSize);
+//        puts(debugOutputString);
     }
 }
 
 void debugReallocOutput(void *reallocBlock, size_t reqSize, size_t actualSize,
                         void *result) {
     if (getenv("DEBUG_MALLOC")) {
-        snprintf(debugOutputString,
-                 DEBUG_STR_SIZE,
-                 "MALLOC: realloc(%zu, %zu) => (ptr=%zu, size=%zu))",
-                 (uintptr_t)reallocBlock, reqSize, (uintptr_t)result,
-                 actualSize);
-        puts(debugOutputString);
+//        snprintf(debugOutputString,
+//                 DEBUG_STR_SIZE,
+//                 "MALLOC: realloc(%zu, %zu) => (ptr=%zu, size=%zu))",
+//                 (uintptr_t)reallocBlock, reqSize, (uintptr_t)result,
+//                 actualSize);
+//        puts(debugOutputString);
     }
 }
 
@@ -123,9 +123,9 @@ void free(void *ptr) {
     MallocHeader *blockToFree = findOwnerBlock(ptr, &prevBlock);
     
     if (getenv("DEBUG_MALLOC")) {
-        snprintf(debugOutputString,
-                 DEBUG_STR_SIZE, "MALLOC: free(%zu)",(uintptr_t)ptr);
-        puts(debugOutputString);
+//        snprintf(debugOutputString,
+//                 DEBUG_STR_SIZE, "MALLOC: free(%zu)",(uintptr_t)ptr);
+//        puts(debugOutputString);
     }
     
     if ((void*) -1 == blockToFree) {
@@ -324,10 +324,10 @@ void *calloc(size_t nmemb, size_t size) {
     size_t actualSize = (MEMORY_ALIGNMENT - totalSize % MEMORY_ALIGNMENT);
     void *result = malloc(totalSize);
     
-    snprintf(debugOutputString,
-             DEBUG_STR_SIZE, "MALLOC: calloc(%zu, %zu) => (ptr=%zu, size=%zu))",
-             nmemb, totalSize, (uintptr_t)result, actualSize);
-    puts(debugOutputString);
+//    snprintf(debugOutputString,
+//             DEBUG_STR_SIZE, "MALLOC: calloc(%zu, %zu) => (ptr=%zu, size=%zu))",
+//             nmemb, totalSize, (uintptr_t)result, actualSize);
+//    puts(debugOutputString);
     
     if (result) {
         memset(result, 0, totalSize);
