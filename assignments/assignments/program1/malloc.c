@@ -11,9 +11,11 @@
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define MEMORY_ALIGNMENT 16
 #define CHUNK_SIZE 64*1024
+#define DEBUG_STR_SIZE 1000
 
 /* How much spare free space we should have if we're going to split
  *  up a block that's been free'd */
@@ -32,75 +34,40 @@ MallocHeader *mallocListHead = NULL;
 
 size_t availableMemoryInChunk;
 
-void *testMalloc(size_t size) {
-    void *result = calloc(size, 5);
-    uintptr_t mallocChunk = (uintptr_t) result;
-    
-    if (mallocChunk % 16 != 0) {
-        int uh_oh = mallocChunk % 16;
-        uh_oh += 0;
-        //uh oh
-    }
-    
-    return result;
+char debugOutputString[DEBUG_STR_SIZE];
+
+int main(int argc, const char * argv[]) {
+//    for (int i = 8; i < 9000; i++) {
+//        char* test = malloc(4);
+//        test = realloc(test, 4);
+//        test = realloc(test, 3);
+//        test = realloc(test, 2);
+//        test = realloc(test, 3);
+//        test = realloc(test, 4);
+////        test = realloc(test, i - 4);
+//    }
 }
 
-//int main(int argc, const char * argv[]) {
-//    
-//    
-//    int *a, *b;
-//    for (int i = 1; i < 20; i++) {
-//        a = testMalloc(10 * i * i);
-//        b = testMalloc(20 * i);
-//        free(a);
-//        free(b);
-//    }
-//
-//    int *test1 = testMalloc(100);
-//    int *test2 = testMalloc(200);
-//    *test2 = 12345678;
-//    realloc(test2, 15);
-//    realloc(test2, 100);
-//    int *test3 = testMalloc(14);
-//    int *test4 = testMalloc(15);
-//    int *test5 = testMalloc(15);
-//    int *test6 = testMalloc(15);
-//    int *test7 = testMalloc(7);
-//    realloc(test2, 15);
-//    int *test8 = testMalloc(CHUNK_SIZE * 20);
-//    int *test9 = testMalloc(15);
-//    int *test10 = testMalloc(15);
-//    int *test11 = testMalloc(15);
-//    
-//    realloc(test2, 17);
-//    
-//    free(test1);
-//    free(test9);
-//    free(test8);
-//    free(test10);
-//    realloc(test3, 700);
-//    int *test12 = testMalloc(60);
-//    realloc(test2, CHUNK_SIZE * 30);
-//    int *test13 = testMalloc(50);
-//    int *test14 = testMalloc(50);
-//    int *test15 = testMalloc(50);
-//    int *test16 = testMalloc(50);
-//    int *test17 = testMalloc(50);
-//    int *test18 = testMalloc(50);
-//    int *test19 = testMalloc(50);
-//    int *test20 = testMalloc(50);
-//    int *test21 = testMalloc(50);
-//    int *test22 = testMalloc(50);
-//    free(test13);
-//    free(test14);
-//    free(test16);
-//    free(test15);
-//    
-//    int *test23 = testMalloc(50);
-//    int *test24 = testMalloc(50);
-//    int *test25 = testMalloc(50);
-//    
-//}
+void debugMallocOutput(size_t reqSize, size_t actualSize, void *result) {
+    if (getenv("DEBUG_MALLOC")) {
+        snprintf(debugOutputString,
+                 DEBUG_STR_SIZE, "MALLOC: malloc(%zu) => (ptr=%zu, size=%zu))",
+                 reqSize, (uintptr_t)result, actualSize);
+        puts(debugOutputString);
+    }
+}
+
+void debugReallocOutput(void *reallocBlock, size_t reqSize, size_t actualSize,
+                        void *result) {
+    if (getenv("DEBUG_MALLOC")) {
+        snprintf(debugOutputString,
+                 DEBUG_STR_SIZE,
+                 "MALLOC: realloc(%zu, %zu) => (ptr=%zu, size=%zu))",
+                 (uintptr_t)reallocBlock, reqSize, (uintptr_t)result,
+                 actualSize);
+        puts(debugOutputString);
+    }
+}
 
 /**
  * Gives you a chunk of memory on the heap! Guarenteed to be 16-byte
@@ -108,8 +75,10 @@ void *testMalloc(size_t size) {
  */
 void *malloc(size_t size) {
     MallocHeader *currMallocListPosn = mallocListHead;
+    size_t actualSize = (MEMORY_ALIGNMENT - size % MEMORY_ALIGNMENT);
     
-    if (!adjustDataBreak(size + sizeof(MallocHeader))) {
+    
+    if (!adjustDataBreak(actualSize + sizeof(MallocHeader))) {
         errno = ENOMEM; /* Out of memory */
         return NULL;
     }
@@ -117,22 +86,32 @@ void *malloc(size_t size) {
     if (!currMallocListPosn) { /* Very first malloc'd node! */
         currMallocListPosn = mallocListHead;
         
-        allocateMemoryAt(currMallocListPosn, size);
+        allocateMemoryAt(currMallocListPosn, actualSize);
+        
+        debugMallocOutput(size, actualSize, currMallocListPosn->data);
         return currMallocListPosn->data;
+    }
+    
+    if (currMallocListPosn->isFree &&
+        currMallocListPosn->dataSize >= actualSize) {
+        debugMallocOutput(size, actualSize, currMallocListPosn->data);
+        return reuseFreedMemory(currMallocListPosn, actualSize);
     }
     
     while (!currMallocListPosn->isLast) {
         if (currMallocListPosn->isFree &&
-            currMallocListPosn->dataSize >= size) {
-            return reuseFreedMemory(currMallocListPosn, size);
+            currMallocListPosn->dataSize >= actualSize) {
+            debugMallocOutput(size, actualSize, currMallocListPosn->data);
+            return reuseFreedMemory(currMallocListPosn, actualSize);
         }
         
         currMallocListPosn = currMallocListPosn->next;
     }
     
     currMallocListPosn->isLast = 0;
-    allocateMemoryAt(currMallocListPosn->next, size);
+    allocateMemoryAt(currMallocListPosn->next, actualSize);
     
+    debugMallocOutput(size, actualSize, currMallocListPosn->next->data);
     return currMallocListPosn->next->data;
 }
 
@@ -143,6 +122,12 @@ void free(void *ptr) {
     MallocHeader *prevBlock;
     MallocHeader *blockToFree = findOwnerBlock(ptr, &prevBlock);
     
+    if (getenv("DEBUG_MALLOC")) {
+        snprintf(debugOutputString,
+                 DEBUG_STR_SIZE, "MALLOC: free(%zu)",(uintptr_t)ptr);
+        puts(debugOutputString);
+    }
+    
     if ((void*) -1 == blockToFree) {
         return;
     }
@@ -151,8 +136,6 @@ void free(void *ptr) {
     
     // Check if we should merge this freed block with the previous block
     if (prevBlock && prevBlock->isFree) {
-        printf("Merged with the guy behind me! His size: %zu, my size: %zu\n",
-               prevBlock->dataSize, blockToFree->dataSize);
         prevBlock->next = blockToFree->next;
         prevBlock->dataSize += blockToFree->dataSize;
         prevBlock->isLast = blockToFree->isLast;
@@ -162,8 +145,6 @@ void free(void *ptr) {
     
     // Check if we should merge this freed block with the one after
     if (blockToFree->next && blockToFree->next->isFree) {
-printf("Merged with the guy in front of me! His size: %zu, my size: %zu\n",
-       blockToFree->next->dataSize, blockToFree->dataSize);
         blockToFree->dataSize += blockToFree->next->dataSize;
         blockToFree->isLast = blockToFree->next->isLast;
         
@@ -182,8 +163,6 @@ void *reuseFreedMemory(MallocHeader *freedMemory, size_t size) {
     size_t leftoverSize = totalFreeSize - size;
     MallocHeader *extraFreeBlock;
     
-    printf("Shrinking block of size %zu to %zu ", freedMemory->dataSize, size);
-    
     allocateMemoryAt(freedMemory, size);
         
     /* Check for extra unused space we can fit another 'free' block into */
@@ -196,13 +175,10 @@ void *reuseFreedMemory(MallocHeader *freedMemory, size_t size) {
         extraFreeBlock->isLast = wasLastBlock;
         
         freedMemory->isLast = 0;
-        
-        printf("and making end-block of size %zu\n", extraFreeBlock->dataSize);
     }
     else {
         freedMemory->next = blockAfterMe;
         freedMemory->isLast = wasLastBlock;
-        printf("\n");
     }
     
     return freedMemory->data;
@@ -215,10 +191,21 @@ void *realloc(void *ptr, size_t size) {
     MallocHeader *blockToRealloc;
     MallocHeader *prevBlock;
     size_t joinedFreeBlockMemory;
+    size_t actualSize = (MEMORY_ALIGNMENT -
+                         joinedFreeBlockMemory % MEMORY_ALIGNMENT);
+    
     void *result;
     
     if (!ptr) {
-        return malloc(size);
+        result = malloc(size);
+        debugReallocOutput(ptr, size, actualSize, result);
+        return result;
+    }
+    
+    if (size == 0) {
+        free(ptr);
+        debugReallocOutput(ptr, size, actualSize, 0);
+        return NULL;
     }
     
     blockToRealloc = findOwnerBlock(ptr, &prevBlock);
@@ -241,11 +228,13 @@ void *realloc(void *ptr, size_t size) {
     
     if (blockToRealloc->dataSize >= size) { /* Can shrink block in-place */
         blockToRealloc->isFree = 1;
+        debugReallocOutput(ptr, size, actualSize, blockToRealloc->data);
         return reuseFreedMemory(blockToRealloc, size);
     }
     else {
         /* Reallocing the last block in the list. Just expand it. */
         if (blockToRealloc->isLast) {
+            debugReallocOutput(ptr, size, actualSize, blockToRealloc->data);
             return expandLastBlock(blockToRealloc, size);
         }
     }
@@ -254,9 +243,10 @@ void *realloc(void *ptr, size_t size) {
      *  a new block, with the same data. */
     result = malloc(size);
     if (result) {
-        blockToRealloc->isFree = 1;
         memcpy(result, blockToRealloc->data, size);
+        free(blockToRealloc->data);
     }
+    debugReallocOutput(ptr, size, actualSize, result);
     return result;
     // ~pn-cs453/lib/asgn1/test1.lib/<dirs>
 }
@@ -331,7 +321,13 @@ void *allocateMemoryAt(MallocHeader *currMallocListPosn, size_t size) {
 
 void *calloc(size_t nmemb, size_t size) {
     size_t totalSize = nmemb * size;
+    size_t actualSize = (MEMORY_ALIGNMENT - totalSize % MEMORY_ALIGNMENT);
     void *result = malloc(totalSize);
+    
+    snprintf(debugOutputString,
+             DEBUG_STR_SIZE, "MALLOC: calloc(%zu, %zu) => (ptr=%zu, size=%zu))",
+             nmemb, totalSize, (uintptr_t)result, actualSize);
+    puts(debugOutputString);
     
     if (result) {
         memset(result, 0, totalSize);
