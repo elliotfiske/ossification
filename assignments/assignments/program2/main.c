@@ -7,20 +7,20 @@
 //
 
 #include <stdio.h>
+#include "lwp.h"
 
 int foo(int a, int b) {
     a += b;
     return a;
 }
 
-int main(int argc, const char * argv[]) {
-#if defined(__x86_64asdfsa)
+int main(int argc, char *argv[]) {
     // insert code here...
     int hi = 255;
-//    printf("Hello, World!\n");
+    rfile test;
+
+    swap_rfiles(&test, NULL);
+    
     hi = foo(hi, 69);
     return 0;
-#else
-    return 1;
-#endif
 }
