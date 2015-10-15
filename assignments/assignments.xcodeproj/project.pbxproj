@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C9051FF31BCC7AE800CDA3C9 /* magic64.S in Sources */ = {isa = PBXBuildFile; fileRef = C9051FE71BCC7AE800CDA3C9 /* magic64.S */; settings = {ASSET_TAGS = (); }; };
-		C9051FF41BCC7AE800CDA3C9 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C9051FE81BCC7AE800CDA3C9 /* main.c */; settings = {ASSET_TAGS = (); }; };
+		C9051FF41BCC7AE800CDA3C9 /* lwp_main.c in Sources */ = {isa = PBXBuildFile; fileRef = C9051FE81BCC7AE800CDA3C9 /* lwp_main.c */; settings = {ASSET_TAGS = (); }; };
 		C9051FF51BCC7AE800CDA3C9 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = C9051FE91BCC7AE800CDA3C9 /* Makefile */; settings = {ASSET_TAGS = (); }; };
 		C96B30661BB61DFE001C22BE /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30631BB61DFE001C22BE /* main.c */; settings = {ASSET_TAGS = (); }; };
 		C96B30671BB61DFE001C22BE /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = C96B30641BB61DFE001C22BE /* Makefile */; settings = {ASSET_TAGS = (); }; };
@@ -49,7 +49,7 @@
 /* Begin PBXFileReference section */
 		C9051FE61BCC7AE800CDA3C9 /* lwp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwp.h; path = assignments/program2/lwp.h; sourceTree = "<group>"; };
 		C9051FE71BCC7AE800CDA3C9 /* magic64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = magic64.S; path = assignments/program2/magic64.S; sourceTree = "<group>"; };
-		C9051FE81BCC7AE800CDA3C9 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = assignments/program2/main.c; sourceTree = "<group>"; };
+		C9051FE81BCC7AE800CDA3C9 /* lwp_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lwp_main.c; path = assignments/program2/lwp_main.c; sourceTree = "<group>"; };
 		C9051FE91BCC7AE800CDA3C9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = assignments/program2/Makefile; sourceTree = "<group>"; };
 		C9051FEC1BCC7AE800CDA3C9 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README; path = assignments/program2/README; sourceTree = "<group>"; };
 		C91E72111BC3BA6D007CD24A /* program2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program2; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -94,7 +94,7 @@
 			children = (
 				C9051FE61BCC7AE800CDA3C9 /* lwp.h */,
 				C9051FE71BCC7AE800CDA3C9 /* magic64.S */,
-				C9051FE81BCC7AE800CDA3C9 /* main.c */,
+				C9051FE81BCC7AE800CDA3C9 /* lwp_main.c */,
 				C9051FE91BCC7AE800CDA3C9 /* Makefile */,
 				C9051FEC1BCC7AE800CDA3C9 /* README */,
 			);
@@ -244,7 +244,7 @@
 			files = (
 				C9051FF31BCC7AE800CDA3C9 /* magic64.S in Sources */,
 				C9051FF51BCC7AE800CDA3C9 /* Makefile in Sources */,
-				C9051FF41BCC7AE800CDA3C9 /* main.c in Sources */,
+				C9051FF41BCC7AE800CDA3C9 /* lwp_main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

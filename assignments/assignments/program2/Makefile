@@ -1,15 +1,12 @@
 CC 	= gcc
 
-CFLAGS  = -Wall -g -I .
+CFLAGS = -Wall -I .
+
+CFLAGS_DEBUG  = -g $(CFLAGS)
 
 LD 	= gcc
 
-LDFLAGS  = -Wall -g -L/home/pn-cs453/Given/Asgn2
-
-PUBFILES =  README  hungrymain.c  libPLN.a  libsnakes.a  lwp.h\
-	    numbersmain.c  snakemain.c  snakes.h
-
-TARGET =  pn-cs453@hornet:Given/asgn2
+LDFLAGS  = -Wall -g -L.
 
 PROGS	= snakes nums hungry
 
@@ -21,28 +18,41 @@ NUMOBJS    = numbersmain.o
 
 OBJS	= $(SNAKEOBJS) $(HUNGRYOBJS) $(NUMOBJS) 
 
-SRCS	= snakemain.c numbersmain.c
-
-HDRS	= 
-
 EXTRACLEAN = core $(PROGS)
 
-all: 	$(PROGS)
+# Bread 'n Butta ---------------------#
+all: liblwp.so
 
+liblwp.so: lwp_main.o
+	$(CC) $(CFLAGS) -shared -fPIC -o liblwp.so lwp_main.o
+
+lwp_main.o:
+	gcc -c -fPIC lwp_main.c magic64.S
+# End Bread 'n Butta -----------------#
+
+
+# Cleanliness.next() == Godliness
 allclean: clean
 	@rm -f $(EXTRACLEAN)
 
 clean:	
 	rm -f $(OBJS) *~ TAGS
 
-snakes: snakemain.o libPLN.a libsnakes.a
-	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -lPLN
+# Generates test executables (snake game + number printer)
+setup: 
+	export LD_LIBRARY_PATH=.:$(LD_LIBRARY_PATH)
+	echo $$LD_LIBRARY_PATH
 
-hungry: hungrymain.o libPLN.a libsnakes.a
-	$(LD) $(LDFLAGS) -o hungry hungrymain.o -L. -lncurses -lsnakes -lPLN
+test: 	setup $(PROGS)
 
-nums: numbersmain.o libPLN.a 
-	$(LD) $(LDFLAGS) -o nums numbersmain.o -L. -lPLN
+snakes: snakemain.o liblwp.so libsnakes.a
+	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -llwp
+
+hungry: hungrymain.o liblwp.so libsnakes.a
+	$(LD) $(LDFLAGS) -o hungry hungrymain.o -L. -lncurses -lsnakes -llwp
+
+nums: numbersmain.o liblwp.so 
+	$(LD) $(LDFLAGS) -o nums numbersmain.o -L. -llwp
 
 hungrymain.o: lwp.h snakes.h
 
@@ -50,6 +60,4 @@ snakemain.o: lwp.h snakes.h
 
 numbermain.o: lwp.h
 
-pub:
-	scp $(PUBFILES) $(TARGET)
-
+# This is the end, my friend
