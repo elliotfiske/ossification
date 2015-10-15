@@ -9,38 +9,70 @@
 #include <stdio.h>
 #include "lwp.h"
 #include <stdlib.h>
+#include <string.h>
 
-int foo(int a, int b) {
-    a += b;
-    return a;
-}z
+tid_t currThreadID = 0;
+thread threadListHead; /* Keep track of all the threads so we can delete
+                           the threads on lwp_stop() */
 
-//int main(int argc, char *argv[]) {
-//    // insert code here...
-//    int hi = 255;
-//    rfile test;
-//
-//    swap_rfiles(&test, NULL);
-//    
-//    hi = foo(hi, 69);
-//    return 0;
-//}
+rfile setupArguments(void *arguments) {
+    rfile result;
+    size_t offset = sizeof(unsigned long);
+    
+    result.rdi = *((int *) arguments);
+    result.rsi = *((int *) (arguments + offset));
+    result.rdx = *((int *) (arguments + offset));
+    result.rcx = *((int *) (arguments + offset));
+    result.r8  = *((int *) (arguments + offset));
+    result.r9  = *((int *) (arguments + offset));
+    
+    return result;
+}
 
 /**
  * Spawn a sexy new thread with the specified function to run,
  *  arguments for the function, and requested stack size.
  */
 tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
-    context result;
+    thread result = malloc(sizeof(context));
+    size_t stackBytes = stackSize * sizeof(unsigned long);
     
-    // fprintf(stderr, "Called lwp_create with size of %zu\n", stackSize);
+    void *threadStack = malloc(stackBytes);
+    void *threadStackBase = threadStack + stackBytes;
     
-    void *threadStack = malloc(stackSize * sizeof(unsigned long));
-    void *threadStackBottom = threadStack + stackSize * sizeof(unsigned long);
+    result->tid = currThreadID++;
     
-    result.stack = threadStack;
+    result->stack = threadStack;
+    result->stacksize = stackBytes;
     
-    return result.tid;
+    result->state = setupArguments(arguments);
+    
+    memcpy(threadStackBase, &lwp_exit, sizeof(unsigned long));
+    threadStackBase -= sizeof(unsigned long);
+    
+    result->state.rbp = (unsigned long) threadStackBase;
+    // TODO: Old base pointer?
+    threadStackBase -= sizeof(unsigned long);
+    
+    memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
+    threadStackBase -= sizeof(unsigned long);
+    
+    memcpy(threadStackBase, &(result->state.rbp), sizeof(unsigned long));
+    
+    result->state.rsp = (unsigned long) threadStackBase;
+    
+    /* Build linked list of threads */
+    if (threadListHead == NULL) {
+        threadListHead = result;
+    }
+    else {
+        threadListHead->lib_one = result;
+        result->lib_two = threadListHead;
+    }
+    
+    threadListHead = result;
+    
+    return result->tid;
 }
 
 /**
@@ -71,7 +103,9 @@ void  lwp_yield(void) {
  * Start all da threads we've lwp_create'd
  */
 void  lwp_start(void) {
-    fprintf(stderr, "Called lwp_start\n");
+    rfile oldRfiles;
+    
+    swap_rfiles(&oldRfiles, &(threadListHead->state));
 }
 
 /**
@@ -110,3 +144,22 @@ thread tid2thread(tid_t tid) {
     thread result;
     return result;
 }
+
+int poop(int a) {
+    printf("Hi I'm in here now\n");
+    
+    printf("STuff\n");
+    
+    return a + 1;
+}
+
+
+int main(int argc, char *argv[]) {
+    int argument = 69;
+    lwp_create((void *) poop, &argument, 100);
+    
+    lwp_start();
+    
+    return 0;
+}
+

@@ -36,8 +36,8 @@
 	movq %r15,120(%rdi)
 
 	# load the new one (if new != NULL)
-load:	cmpq	$0,%rsi
-	je done
+load: #	cmpq	$0,%rsi
+	#je done
 	
 	movq    (%rsi),%rax	# retreive rax from new->rax
 	movq   8(%rsi),%rbx	# etc.
