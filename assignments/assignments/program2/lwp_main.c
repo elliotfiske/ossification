@@ -41,7 +41,7 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
  * Call this from a lwp thread to tell it to DIE
  */
 void  lwp_exit(void) {
-    fprintf(stderr, "Called lwp_exit");
+    fprintf(stderr, "Called lwp_exit\n");
 }
 
 /**
@@ -49,7 +49,7 @@ void  lwp_exit(void) {
  */
 tid_t lwp_gettid(void) {
     tid_t result;
-    fprintf(stderr, "Called lwp_gettid");
+    fprintf(stderr, "Called lwp_gettid\n");
     return result;
 }
 
@@ -58,21 +58,21 @@ tid_t lwp_gettid(void) {
  *  to block
  */
 void  lwp_yield(void) {
-    fprintf(stderr, "Called lwp_yield");
+    fprintf(stderr, "Called lwp_yield\n");
 }
 
 /**
  * Start all da threads we've lwp_create'd
  */
 void  lwp_start(void) {
-    fprintf(stderr, "Called lwp_start");
+    fprintf(stderr, "Called lwp_start\n");
 }
 
 /**
  * Stop all threads!
  */
 void  lwp_stop(void) {
-    fprintf(stderr, "Called lwp_stop");
+    fprintf(stderr, "Called lwp_stop\n");
 }
 
 /**
@@ -82,7 +82,7 @@ void  lwp_stop(void) {
  *  new scheduler.
  */
 void  lwp_set_scheduler(scheduler fun) {
-    fprintf(stderr, "Called lwp_set_scheduler");
+    fprintf(stderr, "Called lwp_set_scheduler\n");
 }
 
 /**
@@ -91,7 +91,7 @@ void  lwp_set_scheduler(scheduler fun) {
  */
 scheduler lwp_get_scheduler(void) {
     scheduler result;
-    fprintf(stderr, "Called lwp_get_scheduler");
+    fprintf(stderr, "Called lwp_get_scheduler\n");
     return result;
 }
 
@@ -100,7 +100,7 @@ scheduler lwp_get_scheduler(void) {
  *  such thread exists.
  */
 thread tid2thread(tid_t tid) {
-    fprintf(stderr, "Called tid2thread");
+    fprintf(stderr, "Called tid2thread\n\n");
     thread result;
     return result;
 }

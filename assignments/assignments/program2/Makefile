@@ -39,11 +39,7 @@ clean:
 	rm -f $(OBJS) *~ TAGS
 
 # Generates test executables (snake game + number printer)
-setup: 
-	export LD_LIBRARY_PATH=.:$(LD_LIBRARY_PATH)
-	echo $$LD_LIBRARY_PATH
-
-test: 	setup $(PROGS)
+test: $(PROGS)
 
 snakes: snakemain.o liblwp.so libsnakes.a
 	$(LD) $(LDFLAGS) -o snakes snakemain.o -L. -lncurses -lsnakes -llwp
