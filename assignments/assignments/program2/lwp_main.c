@@ -8,11 +8,12 @@
 
 #include <stdio.h>
 #include "lwp.h"
+#include <stdlib.h>
 
 int foo(int a, int b) {
     a += b;
     return a;
-}
+}z
 
 //int main(int argc, char *argv[]) {
 //    // insert code here...
@@ -30,11 +31,16 @@ int foo(int a, int b) {
  *  arguments for the function, and requested stack size.
  */
 tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
-    tid_t result;
+    context result;
     
-    fprintf(stderr, "Called lwp_create with size of %zu\n", stackSize);
+    // fprintf(stderr, "Called lwp_create with size of %zu\n", stackSize);
     
-    return result;
+    void *threadStack = malloc(stackSize * sizeof(unsigned long));
+    void *threadStackBottom = threadStack + stackSize * sizeof(unsigned long);
+    
+    result.stack = threadStack;
+    
+    return result.tid;
 }
 
 /**
