@@ -10,6 +10,7 @@
 #include "lwp.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 tid_t currThreadID = 0;
 thread threadListHead; /* Keep track of all the threads so we can delete
@@ -38,6 +39,10 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     size_t stackBytes = stackSize * sizeof(unsigned long);
     
     void *threadStack = malloc(stackBytes);
+    uintptr_t alignedStack = (uintptr_t) threadStack;
+    alignedStack += (16 - alignedStack % 16);
+    threadStack = (void *)alignedStack;
+    
     void *threadStackBase = threadStack + stackBytes;
     
     result->tid = currThreadID++;
@@ -47,7 +52,8 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     result->state = setupArguments(arguments);
     
-    memcpy(threadStackBase, &lwp_exit, sizeof(unsigned long));
+    void (*exit_ptr)(void) = &lwp_exit;
+    memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
     threadStackBase -= sizeof(unsigned long);
     
     result->state.rbp = (unsigned long) threadStackBase;
@@ -145,18 +151,16 @@ thread tid2thread(tid_t tid) {
     return result;
 }
 
-int poop(int a) {
+void poop(int a) {
     printf("Hi I'm in here now\n");
     
     printf("STuff\n");
-    
-    return a + 1;
 }
 
 
 int main(int argc, char *argv[]) {
     int argument = 69;
-    lwp_create((void *) poop, &argument, 100);
+    lwp_create((lwpfun)poop, &argument, 100);
     
     lwp_start();
     

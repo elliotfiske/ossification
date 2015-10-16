@@ -26,8 +26,8 @@ all: liblwp.so
 liblwp.so: lwp_main.o
 	$(CC) $(CFLAGS) -shared -fPIC -o liblwp.so lwp_main.o
 
-lwp_main.o:
-	gcc -c -fPIC lwp_main.c magic64.S
+lib_exec:
+	gcc -fPIC lwp_main.c magic64.S -g -o lib_exec
 # End Bread 'n Butta -----------------#
 
 
