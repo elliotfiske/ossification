@@ -56,6 +56,7 @@
 	movq 120(%rsi),%r15
 	movq  32(%rsi),%rsi	# must do rsi last, since it's our pointer
 
-done:	leave
-	ret
+done:
+    leave
+    ret
 	

@@ -16,6 +16,8 @@ tid_t currThreadID = 0;
 thread threadListHead; /* Keep track of all the threads so we can delete
                            the threads on lwp_stop() */
 
+void *muhStack;
+
 rfile setupArguments(void *arguments) {
     rfile result;
     size_t offset = sizeof(unsigned long);
@@ -53,11 +55,13 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     result->state = setupArguments(arguments);
     
     void (*exit_ptr)(void) = &lwp_exit;
-    memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
+    memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
     threadStackBase -= sizeof(unsigned long);
     
     result->state.rbp = (unsigned long) threadStackBase;
     // TODO: Old base pointer?
+    *(unsigned long *)threadStackBase = 0xDEADBEEF;
+//    memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
     threadStackBase -= sizeof(unsigned long);
     
     memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
@@ -66,6 +70,7 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     memcpy(threadStackBase, &(result->state.rbp), sizeof(unsigned long));
     
     result->state.rsp = (unsigned long) threadStackBase;
+    result->state.rbp = result->state.rsp;
     
     /* Build linked list of threads */
     if (threadListHead == NULL) {
@@ -75,6 +80,8 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
         threadListHead->lib_one = result;
         result->lib_two = threadListHead;
     }
+    
+    muhStack = threadStackBase;
     
     threadListHead = result;
     
@@ -110,6 +117,7 @@ void  lwp_yield(void) {
  */
 void  lwp_start(void) {
     rfile oldRfiles;
+    oldRfiles.rax = oldRfiles.r15 = 0xffffff;
     
     swap_rfiles(&oldRfiles, &(threadListHead->state));
 }
@@ -151,10 +159,15 @@ thread tid2thread(tid_t tid) {
     return result;
 }
 
-void poop(int a) {
-    printf("Hi I'm in here now\n");
+void poop(int a) {=
+    unsigned long butts = 0xABCDEFAA;
+    unsigned long buttz = 0xE69E69EE;
     
-    printf("STuff\n");
+    printf("Hi I'm in here now %zu\n", butts);
+    
+    printf("STuff %zu\n", buttz);
+    
+    return;
 }
 
 
