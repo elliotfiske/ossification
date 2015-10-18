@@ -159,7 +159,7 @@ thread tid2thread(tid_t tid) {
     return result;
 }
 
-void poop(int a) {=
+void poop(int a) {
     unsigned long butts = 0xABCDEFAA;
     unsigned long buttz = 0xE69E69EE;
     
