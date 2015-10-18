@@ -54,23 +54,21 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     result->state = setupArguments(arguments);
     
+    *(unsigned long*)threadStackBase = 0xDEADBEEF;
+    threadStackBase -= sizeof(unsigned long); /* Push 2 empty slots */
+    
     void (*exit_ptr)(void) = &lwp_exit;
     memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
-    threadStackBase -= sizeof(unsigned long);
-    
-    result->state.rbp = (unsigned long) threadStackBase;
-    // TODO: Old base pointer?
-    *(unsigned long *)threadStackBase = 0xDEADBEEF;
-//    memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
     threadStackBase -= sizeof(unsigned long);
     
     memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
     threadStackBase -= sizeof(unsigned long);
     
-    memcpy(threadStackBase, &(result->state.rbp), sizeof(unsigned long));
+    *(unsigned long*)threadStackBase = 0xABCD1234; /* Old BP??? */
+//    void (*start_ptr)(void) = &lwp_start;
+//    memcpy(threadStackBase, &start_ptr, sizeof(unsigned long));
     
-    result->state.rsp = (unsigned long) threadStackBase;
-    result->state.rbp = result->state.rsp;
+    result->state.rbp = (unsigned long) threadStackBase;
     
     /* Build linked list of threads */
     if (threadListHead == NULL) {
@@ -92,7 +90,8 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
  * Call this from a lwp thread to tell it to DIE
  */
 void  lwp_exit(void) {
-    fprintf(stderr, "Called lwp_exit\n");
+//    fprintf(stderr, "Called lwp_exit\n");
+    return;
 }
 
 /**
@@ -117,9 +116,14 @@ void  lwp_yield(void) {
  */
 void  lwp_start(void) {
     rfile oldRfiles;
-    oldRfiles.rax = oldRfiles.r15 = 0xffffff;
+    unsigned long var;
+    
+//    GetBP(var);
+//    threadListHead->state.rbp = var;
     
     swap_rfiles(&oldRfiles, &(threadListHead->state));
+    
+    printf("Escaped and returned from thread!\n");
 }
 
 /**
@@ -163,9 +167,9 @@ void poop(int a) {
     unsigned long butts = 0xABCDEFAA;
     unsigned long buttz = 0xE69E69EE;
     
-    printf("Hi I'm in here now %zu\n", butts);
+    printf("Hi I'm in here now\n");
     
-    printf("STuff %zu\n", buttz);
+    printf("STuff\n");
     
     return;
 }

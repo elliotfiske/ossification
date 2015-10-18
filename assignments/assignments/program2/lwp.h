@@ -81,6 +81,8 @@ extern thread tid2thread(tid_t tid);
   #define BAILSIGNAL SIGSTKFLT
   #define GetSP(sp)  asm("movq  %%rsp,%0": "=r" (sp) : )
   #define SetSP(sp)  asm("movq  %0,%%rsp":           : "r" (sp)  )
+  #define GetBP(bp)  asm("movq  %%rbp,%0": "=r" (bp) : )
+  #define SetBP(bp)  asm("movq  %0,%%rbp":           : "r" (bp)  )
 #else /* END x86 only code */
   #error "This stack manipulation code can only be compiled on an x86"
 #endif
