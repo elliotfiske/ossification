@@ -54,23 +54,22 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     result->state = setupArguments(arguments);
     
+    // TODO: put something here: old base pointer?
+    threadStackBase -= sizeof(unsigned long);
+    
+    threadStackBase -= sizeof(unsigned long);
     void (*exit_ptr)(void) = &lwp_exit;
     memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
+    
+    
+//    result->state.rbp = (unsigned long) threadStackBase; TODO: wuts going on here
     threadStackBase -= sizeof(unsigned long);
+    memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
+    
+    threadStackBase -= sizeof(unsigned long);
+    *((unsigned long*) threadStackBase) = 0xABCD1234;
     
     result->state.rbp = (unsigned long) threadStackBase;
-    // TODO: Old base pointer?
-    *(unsigned long *)threadStackBase = 0xDEADBEEF;
-//    memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
-    threadStackBase -= sizeof(unsigned long);
-    
-    memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
-    threadStackBase -= sizeof(unsigned long);
-    
-    memcpy(threadStackBase, &(result->state.rbp), sizeof(unsigned long));
-    
-    result->state.rsp = (unsigned long) threadStackBase;
-    result->state.rbp = result->state.rsp;
     
     /* Build linked list of threads */
     if (threadListHead == NULL) {
@@ -117,7 +116,6 @@ void  lwp_yield(void) {
  */
 void  lwp_start(void) {
     rfile oldRfiles;
-    oldRfiles.rax = oldRfiles.r15 = 0xffffff;
     
     swap_rfiles(&oldRfiles, &(threadListHead->state));
 }
@@ -160,12 +158,12 @@ thread tid2thread(tid_t tid) {
 }
 
 void poop(int a) {
-    unsigned long butts = 0xABCDEFAA;
-    unsigned long buttz = 0xE69E69EE;
+//    unsigned long butts = 0xABCDEFAA;
+//    unsigned long buttz = 0xE69E69EE;
     
-    printf("Hi I'm in here now %zu\n", butts);
+//    printf("Hi I'm in here now %zu\n", butts);
     
-    printf("STuff %zu\n", buttz);
+//    printf("STuff %zu\n", buttz);
     
     return;
 }
@@ -173,6 +171,7 @@ void poop(int a) {
 
 int main(int argc, char *argv[]) {
     int argument = 69;
+    
     lwp_create((lwpfun)poop, &argument, 100);
     
     lwp_start();
