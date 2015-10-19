@@ -91,7 +91,10 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
  * Call this from a lwp thread to tell it to DIE
  */
 void  lwp_exit(void) {
-    fprintf(stderr, "Called lwp_exit\n");
+    int a = 10;
+    fprintf(stderr, "Called lwp_exit %d\n", a);
+    
+    return;
 }
 
 /**
@@ -158,10 +161,10 @@ thread tid2thread(tid_t tid) {
 }
 
 void poop(int a) {
-//    unsigned long butts = 0xABCDEFAA;
+    unsigned long butts = 0xABCDEFAA;
 //    unsigned long buttz = 0xE69E69EE;
     
-//    printf("Hi I'm in here now %zu\n", butts);
+    printf("Hi I'm in here now %zu\n", butts);
     
 //    printf("STuff %zu\n", buttz);
     
