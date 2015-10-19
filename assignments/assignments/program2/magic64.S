@@ -16,7 +16,7 @@
 	
 	# save the old context (if old != NULL)
 	cmpq	$0,%rdi
-	#je load
+	je load
 	
 	movq %rax,   (%rdi)	# store rax into old->rax
 	movq %rbx,  8(%rdi)	# store rbx into old->rbx
@@ -36,8 +36,8 @@
 	movq %r15,120(%rdi)
 
 	# load the new one (if new != NULL)
-#load:	cmpq	$0,%rsi
-#	je done #TODO: i fucked hti sup
+load:	cmpq	$0,%rsi
+	je done #TODO: i fucked hti sup
 	
 	movq    (%rsi),%rax	# retreive rax from new->rax
 	movq   8(%rsi),%rbx	# etc.

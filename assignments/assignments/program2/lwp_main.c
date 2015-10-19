@@ -116,7 +116,7 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     void *threadStack = malloc(stackBytes);
     uintptr_t alignedStack = (uintptr_t) threadStack;
-    alignedStack += (16 - alignedStack % 16);
+//    alignedStack += (16 - alignedStack % 16);
     
     void *threadStackBase = (void *) (alignedStack + stackBytes);
     
@@ -128,10 +128,12 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     result->state = setupArguments(arguments);
     
     // TODO: put something here: old base pointer?
-    *((unsigned long*) threadStackBase) = 0x11111111;
+//    *((unsigned long*) threadStackBase) = 0x11111111;
     threadStackBase -= sizeof(unsigned long);
-    *((unsigned long*) threadStackBase) = 0x22222222;
+//    *((unsigned long*) threadStackBase) = 0x22222222;
     threadStackBase -= sizeof(unsigned long);
+        threadStackBase -= sizeof(unsigned long);
+        threadStackBase -= sizeof(unsigned long);
     
     threadStackBase -= sizeof(unsigned long);
     void (*exit_ptr)(void) = &lwp_exit;
@@ -164,29 +166,29 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
 /**
  * Call this from a lwp thread to tell it to DIE
  */
-void  lwp_exit(void) {
+void lwp_exit(void) {
     thread dummyThread; /* don't  ask */
     dummyThread = NULL;
     
     SetSP(oldStackPointer);
     
-    free(currentThread->stack);
+//    free(currentThread->stack);
     if (currScheduler == NULL) {
         defaultScheduler_remove(currentThread);
     }
     
-    free(currentThread);
+//    free(currentThread);
     
     swap_rfiles(&dummyRFile, &oldRFile);
+    
+    return;
 }
 
 /**
  * Call this from a thread to get its ID
  */
 tid_t lwp_gettid(void) {
-    tid_t result;
-    fprintf(stderr, "Called lwp_gettid\n");
-    return result;
+    return currentThread->tid;
 }
 
 /**

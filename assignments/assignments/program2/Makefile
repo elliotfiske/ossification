@@ -24,10 +24,13 @@ EXTRACLEAN = core $(PROGS)
 all: liblwp.so
 
 liblwp.so: lwp_main.o
-	$(CC) $(CFLAGS) -shared -fPIC -o liblwp.so lwp_main.o
+	$(CC) $(CFLAGS) -shared -fPIC lwp_main.o -o liblwp.so
 
-lib_exec:
-	gcc -fPIC lwp_main.c magic64.S -g -o lib_exec
+lwp_main.o:
+	$(CC) $(CFLAGS) -fPIC lwp_main.c magic64.S -o lwp_main.o
+
+lib_exec: lwp_main.c magic64.S
+	gcc -fPIC lwp_main.c magic64.S -g -O0 -o lib_exec
 # End Bread 'n Butta -----------------#
 
 
