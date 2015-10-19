@@ -16,7 +16,7 @@ HUNGRYOBJS = hungrymain.o
 
 NUMOBJS    = numbersmain.o
 
-OBJS	= $(SNAKEOBJS) $(HUNGRYOBJS) $(NUMOBJS) 
+OBJS	= $(SNAKEOBJS) $(HUNGRYOBJS) $(NUMOBJS) lwp_main.o 
 
 EXTRACLEAN = core $(PROGS)
 
@@ -24,10 +24,10 @@ EXTRACLEAN = core $(PROGS)
 all: liblwp.so
 
 liblwp.so: lwp_main.o
-	$(CC) $(CFLAGS) -shared -fPIC lwp_main.o -o liblwp.so
+	$(CC) $(CFLAGS) -shared -fpic lwp_main.o -o liblwp.so
 
 lwp_main.o:
-	$(CC) $(CFLAGS) -fPIC lwp_main.c magic64.S -o lwp_main.o
+	$(CC) $(CFLAGS) -c -g -fpic lwp_main.c magic64.S
 
 lib_exec: lwp_main.c magic64.S
 	gcc -fPIC lwp_main.c magic64.S -g -O0 -o lib_exec
@@ -40,6 +40,7 @@ allclean: clean
 
 clean:	
 	rm -f $(OBJS) *~ TAGS
+	rm -f liblwp.so
 
 # Generates test executables (snake game + number printer)
 test: $(PROGS)

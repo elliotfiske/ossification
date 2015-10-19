@@ -37,7 +37,7 @@
 
 	# load the new one (if new != NULL)
 load:	cmpq	$0,%rsi
-	je done #TODO: i fucked hti sup
+	je done #TODO:
 	
 	movq    (%rsi),%rax	# retreive rax from new->rax
 	movq   8(%rsi),%rbx	# etc.

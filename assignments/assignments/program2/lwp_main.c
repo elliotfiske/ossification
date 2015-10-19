@@ -111,6 +111,7 @@ void defaultScheduler_remove(thread victim) {
  *  arguments for the function, and requested stack size.
  */
 tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
+    fprintf(stderr, "CALLING LWP_CREATE\n");
     thread result = calloc(1, sizeof(context));
     size_t stackBytes = stackSize * sizeof(unsigned long);
     
@@ -178,7 +179,7 @@ void lwp_exit(void) {
     }
     
 //    free(currentThread);
-    
+    oldRFile.rax = 0xDADBEEDF;
     swap_rfiles(&dummyRFile, &oldRFile);
     
     return;
@@ -214,11 +215,12 @@ thread lwp_get_next() {
  * Start all da threads we've lwp_create'd
  */
 void  lwp_start(void) {
+    fprintf(stderr, "CALLING LWP_START\n");
+    
     thread next = lwp_get_next();
     
     if (next != NULL) {
         currentThread = next;
-        GetSP(oldStackPointer);
         swap_rfiles(&oldRFile, &(threadListHead_sched->state));
     }
 }
