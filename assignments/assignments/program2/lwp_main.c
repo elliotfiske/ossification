@@ -20,7 +20,7 @@ thread threadListTail_sched;
 thread threadListHead_lib; /* Keep track of all the threads so we can delete */
                            /*  the threads on lwp_stop() */
 
-//void *muhStack;
+void *muhStack;
 rfile oldRFile, dummyRFile;
 scheduler currScheduler = NULL;
 
@@ -128,29 +128,31 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     result->state = setupArguments(arguments);
     
-    // TODO: put something here: old base pointer?
-//    *((unsigned long*) threadStackBase) = 0x11111111;
     threadStackBase -= sizeof(unsigned long);
-//    *((unsigned long*) threadStackBase) = 0x22222222;
     threadStackBase -= sizeof(unsigned long);
-        threadStackBase -= sizeof(unsigned long);
-        threadStackBase -= sizeof(unsigned long);
+    threadStackBase -= sizeof(unsigned long);
+    threadStackBase -= sizeof(unsigned long);
+    
+    result->state.rbp = (unsigned long) threadStackBase;
     
     threadStackBase -= sizeof(unsigned long);
     void (*exit_ptr)(void) = &lwp_exit;
     memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
     
+//    threadStackBase -= sizeof(unsigned long);
+//    *((unsigned long*) threadStackBase) = result->state.rbp;
     
-//    result->state.rbp = (unsigned long) threadStackBase; TODO: wuts going on here
+    result->state.rbp = (unsigned long) threadStackBase;
+    
     threadStackBase -= sizeof(unsigned long);
     memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
     
     threadStackBase -= sizeof(unsigned long);
-    *((unsigned long*) threadStackBase) = 0xABCD1234;
+    *((unsigned long*) threadStackBase) = result->state.rbp;
     
     result->state.rbp = (unsigned long) threadStackBase;
     
-//    muhStack = threadStackBase;
+    muhStack = threadStackBase;
     
     /* Build linked list of threads */
     if (threadListHead_lib == NULL) {
@@ -169,18 +171,17 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
  */
 void lwp_exit(void) {
     thread dummyThread; /* don't  ask */
-    dummyThread = NULL;
     
-    SetSP(oldStackPointer);
+    swap_rfiles(&dummyRFile, &oldRFile);
     
+    printf("We're still in lwp_exit boss\n");
 //    free(currentThread->stack);
-    if (currScheduler == NULL) {
-        defaultScheduler_remove(currentThread);
-    }
+//    if (currScheduler == NULL) {
+//        defaultScheduler_remove(currentThread);
+//    }
     
 //    free(currentThread);
-    oldRFile.rax = 0xDADBEEDF;
-    swap_rfiles(&dummyRFile, &oldRFile);
+//    oldRFile.rax = 0xDADBEEDF;
     
     return;
 }
@@ -223,6 +224,9 @@ void  lwp_start(void) {
         currentThread = next;
         swap_rfiles(&oldRFile, &(threadListHead_sched->state));
     }
+    
+    printf("Made it back to lwp_start\n");
+    // free(thread)
 }
 
 
