@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdint.h>
 
-tid_t currThreadID = 0;
+tid_t currThreadID = NO_THREAD + 1;
 thread currentThread;
 thread threadListHead_sched; /* Keep track of all threads for scheduler */
 thread threadListTail_sched;
@@ -30,12 +30,12 @@ rfile setupArguments(void *arguments) {
     rfile result;
     size_t offset = sizeof(unsigned long);
     
-    result.rdi = *((int *) arguments);
-    result.rsi = *((int *) (arguments + offset));
-    result.rdx = *((int *) (arguments + offset));
-    result.rcx = *((int *) (arguments + offset));
-    result.r8  = *((int *) (arguments + offset));
-    result.r9  = *((int *) (arguments + offset));
+    result.rdi = ((long) arguments);
+    result.rsi = ((long) (arguments + offset));
+    result.rdx = ((long) (arguments + offset * 2));
+    result.rcx = ((long) (arguments + offset * 3));
+    result.r8  = ((long) (arguments + offset * 4));
+    result.r9  = ((long) (arguments + offset * 5));
     
     return result;
 }
@@ -44,7 +44,7 @@ rfile setupArguments(void *arguments) {
 /*******    DEFAULT SCHEDULING FUNCTIONS    ********/
 thread defaultScheduler_next() {
     thread result = threadListHead_sched;
-    thread prevThread;
+    thread prevThread = threadListHead_sched;
     
     if (result == NULL) {
         return NULL;
@@ -111,9 +111,9 @@ void defaultScheduler_remove(thread victim) {
  *  arguments for the function, and requested stack size.
  */
 tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
-    fprintf(stderr, "CALLING LWP_CREATE\n");
+    fprintf(stderr, "CALLING LWP_CREATE, hello\n");
     thread result = calloc(1, sizeof(context));
-    size_t stackBytes = stackSize * sizeof(unsigned long);
+    size_t stackBytes = (stackSize + 4) * sizeof(unsigned long);
     
     void *threadStack = malloc(stackBytes);
     uintptr_t alignedStack = (uintptr_t) threadStack;
@@ -163,6 +163,14 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
         threadListHead_lib = result;
     }
     
+    if (currScheduler == NULL) {
+        defaultScheduler_admit(result);
+        
+        if (threadListHead_sched == NULL) {
+            threadListHead_sched = result;
+        }
+    }
+    
     return result->tid;
 }
 
@@ -199,6 +207,7 @@ tid_t lwp_gettid(void) {
  */
 void  lwp_yield(void) {
     fprintf(stderr, "Called lwp_yield\n");
+//    swap_rfiles(&(currentThread->state), &oldRFile);
 }
 
 /**
@@ -216,17 +225,19 @@ thread lwp_get_next() {
  * Start all da threads we've lwp_create'd
  */
 void  lwp_start(void) {
-    fprintf(stderr, "CALLING LWP_START\n");
+    fprintf(stderr, "CALLING LWP_START heyo\n");
     
     thread next = lwp_get_next();
     
-    if (next != NULL) {
+    while (next != NULL) {
         currentThread = next;
         swap_rfiles(&oldRFile, &(threadListHead_sched->state));
+        next = lwp_get_next();
     }
     
-    printf("Made it back to lwp_start\n");
-    // free(thread)
+    printf("Made it back to lwp_start, you know\n");
+    // free(thread), if thread->tid == 0
+    
 }
 
 
@@ -277,23 +288,31 @@ thread tid2thread(tid_t tid) {
     return result;
 }
 
-void poop(int a) {
+void poop(long a) {
     unsigned long butts = 0xABCDEFAA;
-//    unsigned long buttz = 0xE69E69EE;
+    unsigned long buttz = 0xE69E69EE;
     
-    printf("Hi I'm in here now %zu\n", butts);
+    printf("Hi I'm in here now %zu arg: %zu\n", butts, a);
     
-//    printf("STuff %zu\n", buttz);
+    printf("STuff %zu\n", buttz);
+    
+    printf("HI there you\n");
+    
+    printf("HI there you\n");
+    printf("yielding\n");
+//    lwp_yield();
+    printf("HI there you\n");
     
     return;
 }
 
 
 int main(int argc, char *argv[]) {
-    int argument = 69;
+    long argument = 69;
     
-    tid_t threadID = lwp_create((lwpfun)poop, &argument, 1000);
-    defaultScheduler_admit(tid2thread(threadID));
+    tid_t threadID = lwp_create((lwpfun)poop, (void *)argument, 1000);
+//    thread toRun = tid2thread(threadID);
+//    defaultScheduler_admit(toRun);
     
     lwp_start();
     printf("I MADE IT BACK!!\n");

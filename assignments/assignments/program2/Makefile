@@ -24,7 +24,7 @@ EXTRACLEAN = core $(PROGS)
 all: liblwp.so
 
 liblwp.so: lwp_main.o
-	$(CC) $(CFLAGS) -shared -fpic lwp_main.o -o liblwp.so
+	$(CC) $(CFLAGS) -shared -fpic lwp_main.o magic64.o -o liblwp.so
 
 lwp_main.o:
 	$(CC) $(CFLAGS) -c -g -fpic lwp_main.c magic64.S
@@ -32,6 +32,11 @@ lwp_main.o:
 lib_exec: lwp_main.c magic64.S
 	gcc -fPIC lwp_main.c magic64.S -g -O0 -o lib_exec
 # End Bread 'n Butta -----------------#
+
+his: hungrymain.o snakemain.o numbermain.o
+	$(LD) $(LDFLAGS) -o his-snakes snakemain.o -L. -lncurses -lsnakes -lPLN
+	$(LD) $(LDFLAGS) -o his-hungry hungrymain.o -L. -lncurses -lsnakes -lPLN
+	$(LD) $(LDFLAGS) -o his-nums numbersmain.o -L. -lPLN
 
 
 # Cleanliness.next() == Godliness
