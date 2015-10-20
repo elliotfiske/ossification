@@ -263,7 +263,7 @@ void  lwp_start(void) {
     
     while (next != NULL) {
         currentThread = next;
-        swap_rfiles(&oldRFile, &(threadListTail_sched->state));
+        swap_rfiles(&oldRFile, &(currentThread->state));
         
         /* lwp_exit and lwp_yield return back to here */
         if (currentThread->tid == 0) {
