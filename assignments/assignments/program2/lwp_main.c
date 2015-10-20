@@ -129,7 +129,7 @@ void libraryList_remove(thread victim) {
     
     if (threadListHead_lib->lib_one == NULL) { /* One thread left */
         if (threadListHead_lib != victim) {
-            printf("Uh oh! Tried to free guy who's not here.\n");
+            return;
         }
         threadListHead_lib = NULL;
         return;
@@ -167,7 +167,6 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     void *threadStackBase = (void *) (alignedStack + stackBytes);
     
     result->tid = ++currThreadID;
-    printf("Made thread #%d\n", numThreads++);
     
     result->stack = threadStack;
     result->stacksize = stackBytes;
@@ -301,14 +300,7 @@ void  lwp_start(void) {
         if (!yieldPlz) {
             lwp_remove_sched_thread(currentThread);
             
-            if (currentThread->tid == 4092) {
-                printf("yey %zu\n", currentThread->tid);
-            }
-            
             libraryList_remove(currentThread);
-            
-            printf("thread id freed is %zu, %d left\n", currentThread->tid,
-                   --numThreads);
             
             currentThread->tid = -1;
             free(currentThread->stack);
