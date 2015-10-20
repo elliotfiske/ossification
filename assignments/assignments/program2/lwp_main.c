@@ -186,6 +186,9 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
 //        printf("No scheduler available, using defualt\n");
         defaultScheduler_admit(result);
     }
+    else {
+        currScheduler->admit(result);
+    }
     
     return result->tid;
 }
@@ -293,6 +296,10 @@ void  lwp_stop(void) {
 void  lwp_set_scheduler(scheduler fun) {
     thread transferringThread = lwp_get_next();
     
+    if (currScheduler && currScheduler->shutdown) {
+        currScheduler->shutdown();
+    }
+    
     if (fun == NULL) { /* Revert to default scheduler */
         while (transferringThread != NULL) {
             currScheduler->remove(transferringThread);
@@ -310,6 +317,10 @@ void  lwp_set_scheduler(scheduler fun) {
             fun->admit(transferringThread);
             
             transferringThread = transferringThread->lib_one;
+        }
+        
+        if (fun->init != NULL) {
+            fun->init();
         }
     }
     
@@ -368,8 +379,7 @@ void poop(long a) {
 int main(int argc, char *argv[]) {
     long argument = 69;
     
-    tid_t threadID = lwp_create((lwpfun)poop, (void *)argument, 1000);
-    thread toRun = tid2thread(threadID);
+    lwp_create((lwpfun)poop, (void *)argument, 1000);
 //    defaultScheduler_admit(toRun);
     
     lwp_start();
