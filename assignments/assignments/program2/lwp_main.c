@@ -345,18 +345,18 @@ void  lwp_set_scheduler(scheduler fun) {
     }
     else {
         /* Switched to a "real" scheduler. Don't keep the old list around */
-        threadListHead_sched = threadListTail_sched = NULL;
-        
         while (transferringThread != NULL) {
-            currScheduler->remove(transferringThread);
+            lwp_remove_sched_thread(transferringThread);
             fun->admit(transferringThread);
             
-            transferringThread = transferringThread->lib_one;
+            transferringThread = lwp_get_next();
         }
         
         if (fun->init != NULL) {
             fun->init();
         }
+        
+        threadListHead_sched = threadListTail_sched = NULL;
     }
     
     currScheduler = fun;
