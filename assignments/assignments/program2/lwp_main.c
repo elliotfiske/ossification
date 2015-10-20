@@ -105,6 +105,26 @@ void defaultScheduler_remove(thread victim) {
     }
 }
 
+void libraryList_remove(thread victim) {
+    thread prevThread;
+    
+    if (threadListHead_lib->lib_one == NULL) { /* One thread left */
+        threadListHead_lib = NULL;
+        return;
+    }
+    
+    prevThread = threadListHead_lib->lib_one;
+    while (prevThread != NULL && prevThread->sched_one != victim) {
+        prevThread = prevThread->lib_one;
+    }
+    
+    if (prevThread == NULL) { /* Victim not in list */
+        return;
+    }
+    
+    prevThread->lib_one = victim->lib_one;
+}
+
 
 /**
  * Spawn a sexy new thread with the specified function to run,
@@ -179,14 +199,13 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
  */
 void lwp_exit(void) {
     thread dummyThread; /* don't  ask */
+    currentThread->tid = 0;
     
     swap_rfiles(&dummyRFile, &oldRFile);
     
     printf("We're still in lwp_exit boss\n");
 //    free(currentThread->stack);
-//    if (currScheduler == NULL) {
-//        defaultScheduler_remove(currentThread);
-//    }
+
     
 //    free(currentThread);
 //    oldRFile.rax = 0xDADBEEDF;
@@ -206,8 +225,10 @@ tid_t lwp_gettid(void) {
  *  to block
  */
 void  lwp_yield(void) {
-    fprintf(stderr, "Called lwp_yield\n");
-//    swap_rfiles(&(currentThread->state), &oldRFile);
+    thread dummyThread;
+    
+//    fprintf(stderr, "Called lwp_yield\n");
+    swap_rfiles(&(currentThread->state), &oldRFile);
 }
 
 /**
@@ -232,6 +253,17 @@ void  lwp_start(void) {
     while (next != NULL) {
         currentThread = next;
         swap_rfiles(&oldRFile, &(threadListHead_sched->state));
+        
+        /* lwp_exit and lwp_yield return back to here */
+        if (currentThread->tid == 0) {
+            // Free thread
+            defaultScheduler_remove(currentThread);
+            
+            libraryList_remove(currentThread);
+            free(currentThread->stack);
+            free(currentThread);
+        }
+        
         next = lwp_get_next();
     }
     
@@ -311,7 +343,7 @@ int main(int argc, char *argv[]) {
     long argument = 69;
     
     tid_t threadID = lwp_create((lwpfun)poop, (void *)argument, 1000);
-//    thread toRun = tid2thread(threadID);
+    thread toRun = tid2thread(threadID);
 //    defaultScheduler_admit(toRun);
     
     lwp_start();

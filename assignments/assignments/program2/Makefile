@@ -46,6 +46,7 @@ allclean: clean
 clean:	
 	rm -f $(OBJS) *~ TAGS
 	rm -f liblwp.so
+	rm -f lib_exec
 
 # Generates test executables (snake game + number printer)
 test: $(PROGS)
