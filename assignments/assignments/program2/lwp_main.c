@@ -20,7 +20,11 @@ thread threadListHead_sched = NULL;
 thread threadListHead_lib = NULL; /* Keep track of all the threads so we can */
                                   /* delete the threads on lwp_stop() */
 
+/* Debug - delete me TODO */
 void *muhStack;
+int numThreads = 0;
+
+
 rfile oldRFile, dummyRFile;
 scheduler currScheduler = NULL;
 
@@ -110,11 +114,23 @@ void defaultScheduler_remove(thread victim) {
 void libraryList_remove(thread victim) {
     thread prevThread;
     
+    if (victim->tid == -1) {
+        printf("WHAT ARE YOU DOING\n");
+    }
+    
     if (threadListHead_lib == NULL) {
         return;
     }
     
+    if (victim == threadListHead_lib) {
+        threadListHead_lib = threadListHead_lib->lib_one;
+        return;
+    }
+    
     if (threadListHead_lib->lib_one == NULL) { /* One thread left */
+        if (threadListHead_lib != victim) {
+            printf("Uh oh! Tried to free guy who's not here.\n");
+        }
         threadListHead_lib = NULL;
         return;
     }
@@ -150,7 +166,8 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     void *threadStackBase = (void *) (alignedStack + stackBytes);
     
-    result->tid = currThreadID++;
+    result->tid = ++currThreadID;
+    printf("Made thread #%d\n", numThreads++);
     
     result->stack = threadStack;
     result->stacksize = stackBytes;
@@ -284,7 +301,16 @@ void  lwp_start(void) {
         if (!yieldPlz) {
             lwp_remove_sched_thread(currentThread);
             
+            if (currentThread->tid == 4092) {
+                printf("yey %zu\n", currentThread->tid);
+            }
+            
             libraryList_remove(currentThread);
+            
+            printf("thread id freed is %zu, %d left\n", currentThread->tid,
+                   --numThreads);
+            
+            currentThread->tid = -1;
             free(currentThread->stack);
             free(currentThread);
         }
@@ -374,33 +400,71 @@ thread tid2thread(tid_t tid) {
     return result;
 }
 
-void poop(long a) {
-    unsigned long butts = 0xABCDEFAA;
-    unsigned long buttz = 0xE69E69EE;
+//void poop(long a) {
+//    unsigned long butts = 0xABCDEFAA;
+//    unsigned long buttz = 0xE69E69EE;
+//    
+//    printf("Hi I'm in here now %zu arg: %zu\n", butts, a);
+//    
+//    printf("STuff %zu\n", buttz);
+//    
+//    printf("HI there you\n");
+//    
+//    printf("HI there you\n");
+//    printf("yielding\n");
+//    lwp_yield();
+//    printf("HI there you\n");
+//    
+//    return;
+//}
+//
+//
+//int main(int argc, char *argv[]) {
+//    long argument = 69;
+//    
+//    lwp_create((lwpfun)poop, (void *)argument, 1000);
+////    defaultScheduler_admit(toRun);
+//    
+//    lwp_start();
+//    printf("I MADE IT BACK!!\n");
+//    
+//    return 0;
+//}
+
+#define STACKSIZE   4096
+#define THREADCOUNT 4096
+#define TARGETCOUNT 50000
+
+int count;
+int yieldcount;
+
+static void body(int num)
+{
+    int i;
     
-    printf("Hi I'm in here now %zu arg: %zu\n", butts, a);
-    
-    printf("STuff %zu\n", buttz);
-    
-    printf("HI there you\n");
-    
-    printf("HI there you\n");
-    printf("yielding\n");
-    lwp_yield();
-    printf("HI there you\n");
-    
-    return;
+    for(;;) {
+        int num = random()&0xF;
+        for(i=0;i<num;i++) {
+            yieldcount++;
+            lwp_yield();
+        }
+        if ( count < TARGETCOUNT )
+            count++;
+        else
+            lwp_exit();
+    }
 }
 
 
-int main(int argc, char *argv[]) {
-    long argument = 69;
+int main() {
+    int i;
     
-    lwp_create((lwpfun)poop, (void *)argument, 1000);
-//    defaultScheduler_admit(toRun);
-    
+    srandom(0);                   /* There's random and there's random... */
+    printf("Spawining %d threads.\n", THREADCOUNT);
+    count=0;
+    for(i=0;i<THREADCOUNT;i++)
+        lwp_create((lwpfun)body,(void*)0,STACKSIZE);
     lwp_start();
-    printf("I MADE IT BACK!!\n");
-    
-    return 0;
+    printf("Done.  Count is %d. (Yielded %d times)\n", count, yieldcount);
+    exit(0);
 }
