@@ -26,6 +26,9 @@ scheduler currScheduler = NULL;
 
 unsigned long *oldStackPointer;
 
+int stopPlz = 0;
+int yieldPlz = 0;
+
 rfile setupArguments(void *arguments) {
     rfile result;
     size_t offset = sizeof(unsigned long);
@@ -107,13 +110,17 @@ void defaultScheduler_remove(thread victim) {
 void libraryList_remove(thread victim) {
     thread prevThread;
     
+    if (threadListHead_lib == NULL) {
+        return;
+    }
+    
     if (threadListHead_lib->lib_one == NULL) { /* One thread left */
         threadListHead_lib = NULL;
         return;
     }
     
-    prevThread = threadListHead_lib->lib_one;
-    while (prevThread != NULL && prevThread->sched_one != victim) {
+    prevThread = threadListHead_lib;
+    while (prevThread != NULL && prevThread->lib_one != victim) {
         prevThread = prevThread->lib_one;
     }
     
@@ -134,9 +141,12 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     thread result = calloc(1, sizeof(context));
     size_t stackBytes = (stackSize + 4) * sizeof(unsigned long);
     
-    void *threadStack = malloc(stackBytes);
+    void *threadStack = calloc(1, stackBytes);
     uintptr_t alignedStack = (uintptr_t) threadStack;
-//    alignedStack += (16 - alignedStack % 16);
+    
+    if (result == NULL || threadStack == NULL) {
+        return -1;
+    }
     
     void *threadStackBase = (void *) (alignedStack + stackBytes);
     
@@ -198,7 +208,6 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
  */
 void lwp_exit(void) {
     thread dummyThread; /* don't  ask */
-    currentThread->tid = 0;
     
     swap_rfiles(&dummyRFile, &oldRFile);
     
@@ -225,6 +234,7 @@ tid_t lwp_gettid(void) {
  */
 void  lwp_yield(void) {
     thread dummyThread;
+    yieldPlz = 1;
     
 //    fprintf(stderr, "Called lwp_yield\n");
     swap_rfiles(&(currentThread->state), &oldRFile);
@@ -265,14 +275,20 @@ void  lwp_start(void) {
         currentThread = next;
         swap_rfiles(&oldRFile, &(currentThread->state));
         
+        if (stopPlz) {
+            stopPlz = 0;
+            return;
+        }
+        
         /* lwp_exit and lwp_yield return back to here */
-        if (currentThread->tid == 0) {
+        if (!yieldPlz) {
             lwp_remove_sched_thread(currentThread);
             
             libraryList_remove(currentThread);
             free(currentThread->stack);
             free(currentThread);
         }
+        yieldPlz = 0;
         
         next = lwp_get_next();
     }
@@ -284,7 +300,8 @@ void  lwp_start(void) {
  * Stop all threads!
  */
 void  lwp_stop(void) {
-    fprintf(stderr, "Called lwp_stop\n");
+    stopPlz = 1;
+    swap_rfiles(&(currentThread->state), &oldRFile);
 }
 
 /**
