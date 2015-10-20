@@ -1,8 +1,8 @@
 //
-//  main.c
+//  lwp_main.c
 //  program2
 //
-//  Created by Elliot Fiske on 10/6/15.
+//  Created by Elliot Fiske and Jack Wang on 10/6/15.
 //  Copyright © 2015 Elliot Fiske. All rights reserved.
 //
 
@@ -20,18 +20,13 @@ thread threadListHead_sched = NULL;
 thread threadListHead_lib = NULL; /* Keep track of all the threads so we can */
                                   /* delete the threads on lwp_stop() */
 
-/* Debug - delete me TODO */
-void *muhStack;
-int numThreads = 0;
-
-
 rfile oldRFile, dummyRFile;
 scheduler currScheduler = NULL;
 
 unsigned long *oldStackPointer;
 
-int stopPlz = 0;
-int yieldPlz = 0;
+int stopFlag = 0;
+int yieldFlag = 0;
 
 rfile setupArguments(void *arguments) {
     rfile result;
@@ -114,10 +109,6 @@ void defaultScheduler_remove(thread victim) {
 void libraryList_remove(thread victim) {
     thread prevThread;
     
-    if (victim->tid == -1) {
-        printf("WHAT ARE YOU DOING\n");
-    }
-    
     if (threadListHead_lib == NULL) {
         return;
     }
@@ -153,7 +144,6 @@ void libraryList_remove(thread victim) {
  *  arguments for the function, and requested stack size.
  */
 tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
-//    fprintf(stderr, "CALLING LWP_CREATE, hello\n");
     thread result = calloc(1, sizeof(context));
     size_t stackBytes = (stackSize + 4) * sizeof(unsigned long);
     
@@ -173,7 +163,7 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     result->state = setupArguments(arguments);
     
-    threadStackBase -= sizeof(unsigned long);
+    threadStackBase -= sizeof(unsigned long); /* Stack breathing room */
     threadStackBase -= sizeof(unsigned long);
     threadStackBase -= sizeof(unsigned long);
     threadStackBase -= sizeof(unsigned long);
@@ -183,9 +173,6 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     threadStackBase -= sizeof(unsigned long);
     void (*exit_ptr)(void) = &lwp_exit;
     memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
-    
-//    threadStackBase -= sizeof(unsigned long);
-//    *((unsigned long*) threadStackBase) = result->state.rbp;
     
     result->state.rbp = (unsigned long) threadStackBase;
     
@@ -197,8 +184,6 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     result->state.rbp = (unsigned long) threadStackBase;
     
-    muhStack = threadStackBase;
-    
     /* Build linked list of threads */
     if (threadListHead_lib == NULL) {
         threadListHead_lib = result;
@@ -209,7 +194,6 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     }
     
     if (currScheduler == NULL) {
-//        printf("No scheduler available, using defualt\n");
         defaultScheduler_admit(result);
     }
     else {
@@ -226,15 +210,6 @@ void lwp_exit(void) {
     thread dummyThread; /* don't  ask */
     
     swap_rfiles(&dummyRFile, &oldRFile);
-    
-//    printf("We're still in lwp_exit boss\n");
-//    free(currentThread->stack);
-
-    
-//    free(currentThread);
-//    oldRFile.rax = 0xDADBEEDF;
-    
-    return;
 }
 
 /**
@@ -250,9 +225,8 @@ tid_t lwp_gettid(void) {
  */
 void  lwp_yield(void) {
     thread dummyThread;
-    yieldPlz = 1;
+    yieldFlag = 1;
     
-//    fprintf(stderr, "Called lwp_yield\n");
     swap_rfiles(&(currentThread->state), &oldRFile);
 }
 
@@ -280,24 +254,22 @@ void lwp_remove_sched_thread(thread victim) {
 }
 
 /**
- * Start all da threads we've lwp_create'd
+ * Start all the threads we've lwp_create'd
  */
 void  lwp_start(void) {
-//    fprintf(stderr, "CALLING LWP_START heyo\n");
-    
     thread next = lwp_get_next();
     
     while (next != NULL) {
         currentThread = next;
         swap_rfiles(&oldRFile, &(currentThread->state));
         
-        if (stopPlz) {
-            stopPlz = 0;
+        if (stopFlag) {
+            stopFlag = 0;
             return;
         }
         
         /* lwp_exit and lwp_yield return back to here */
-        if (!yieldPlz) {
+        if (!yieldFlag) {
             lwp_remove_sched_thread(currentThread);
             
             libraryList_remove(currentThread);
@@ -306,11 +278,10 @@ void  lwp_start(void) {
             free(currentThread->stack);
             free(currentThread);
         }
-        yieldPlz = 0;
+        yieldFlag = 0;
         
         next = lwp_get_next();
     }
-//    printf("Made it back to lwp_start, you know\n");
 }
 
 
@@ -318,7 +289,7 @@ void  lwp_start(void) {
  * Stop all threads!
  */
 void  lwp_stop(void) {
-    stopPlz = 1;
+    stopFlag = 1;
     swap_rfiles(&(currentThread->state), &oldRFile);
 }
 
@@ -390,73 +361,4 @@ thread tid2thread(tid_t tid) {
     }
     
     return result;
-}
-
-//void poop(long a) {
-//    unsigned long butts = 0xABCDEFAA;
-//    unsigned long buttz = 0xE69E69EE;
-//    
-//    printf("Hi I'm in here now %zu arg: %zu\n", butts, a);
-//    
-//    printf("STuff %zu\n", buttz);
-//    
-//    printf("HI there you\n");
-//    
-//    printf("HI there you\n");
-//    printf("yielding\n");
-//    lwp_yield();
-//    printf("HI there you\n");
-//    
-//    return;
-//}
-//
-//
-//int main(int argc, char *argv[]) {
-//    long argument = 69;
-//    
-//    lwp_create((lwpfun)poop, (void *)argument, 1000);
-////    defaultScheduler_admit(toRun);
-//    
-//    lwp_start();
-//    printf("I MADE IT BACK!!\n");
-//    
-//    return 0;
-//}
-
-#define STACKSIZE   4096
-#define THREADCOUNT 4096
-#define TARGETCOUNT 50000
-
-int count;
-int yieldcount;
-
-static void body(int num)
-{
-    int i;
-    
-    for(;;) {
-        int num = random()&0xF;
-        for(i=0;i<num;i++) {
-            yieldcount++;
-            lwp_yield();
-        }
-        if ( count < TARGETCOUNT )
-            count++;
-        else
-            lwp_exit();
-    }
-}
-
-
-int main() {
-    int i;
-    
-    srandom(0);                   /* There's random and there's random... */
-    printf("Spawining %d threads.\n", THREADCOUNT);
-    count=0;
-    for(i=0;i<THREADCOUNT;i++)
-        lwp_create((lwpfun)body,(void*)0,STACKSIZE);
-    lwp_start();
-    printf("Done.  Count is %d. (Yielded %d times)\n", count, yieldcount);
-    exit(0);
 }
