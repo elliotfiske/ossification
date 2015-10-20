@@ -13,12 +13,12 @@
 #include <stdint.h>
 
 tid_t currThreadID = NO_THREAD + 1;
-thread currentThread;
-thread threadListHead_sched; /* Keep track of all threads for scheduler */
-thread threadListTail_sched;
+thread currentThread = NULL;
+thread threadListTail_sched = NULL; /*Keep track of all threads for scheduler*/
+thread threadListHead_sched = NULL;
 
-thread threadListHead_lib; /* Keep track of all the threads so we can delete */
-                           /*  the threads on lwp_stop() */
+thread threadListHead_lib = NULL; /* Keep track of all the threads so we can */
+                                  /* delete the threads on lwp_stop() */
 
 void *muhStack;
 rfile oldRFile, dummyRFile;
@@ -44,7 +44,6 @@ rfile setupArguments(void *arguments) {
 /*******    DEFAULT SCHEDULING FUNCTIONS    ********/
 thread defaultScheduler_next() {
     thread result = threadListHead_sched;
-    thread prevThread = threadListHead_sched;
     
     if (result == NULL) {
         return NULL;
@@ -54,25 +53,25 @@ thread defaultScheduler_next() {
         return result;
     }
     
-    result->sched_one = threadListTail_sched;
+    /* Add HEAD to the end of the list, after TAIL */
+    threadListTail_sched->sched_one = threadListHead_sched;
+    /* Set the new HEAD to the guy that was right after HEAD */
+    threadListHead_sched = threadListHead_sched->sched_one;
     
-    while (prevThread->sched_one != threadListHead_sched) {
-        prevThread = prevThread->sched_one;
-    }
-    
-    threadListHead_sched = prevThread;
-    prevThread->sched_one = NULL;
+    /* The old HEAD now has nothing after him, and has become the tail. */
+    result->sched_one = NULL;
+    threadListTail_sched = result;
     
     return result;
 }
 
 void defaultScheduler_admit(thread newThread) {
-    if (threadListHead_sched == NULL) {
-        threadListHead_sched = newThread;
+    if (threadListTail_sched == NULL) {
         threadListTail_sched = newThread;
+        threadListHead_sched = newThread;
     }
     else {
-        newThread->sched_one = threadListTail_sched;
+        threadListTail_sched->sched_one = newThread;
         threadListTail_sched = newThread;
     }
 }
@@ -80,15 +79,15 @@ void defaultScheduler_admit(thread newThread) {
 void defaultScheduler_remove(thread victim) {
     thread prevThread;
     
-    if (threadListTail_sched == threadListHead_sched) {
-        threadListHead_sched = threadListTail_sched = NULL; /* One left, kill it*/
+    if (threadListHead_sched == threadListTail_sched) { /* One left, kill it */
+        threadListTail_sched = threadListHead_sched = NULL;
     }
     else {
-        if (victim == threadListTail_sched) {
-            threadListTail_sched = victim->sched_one;
+        if (victim == threadListHead_sched) {
+            threadListHead_sched = victim->sched_one;
         }
         
-        prevThread = threadListTail_sched;
+        prevThread = threadListHead_sched;
         while (prevThread != NULL && prevThread->sched_one != victim) {
             prevThread = prevThread->sched_one;
         }
@@ -97,8 +96,8 @@ void defaultScheduler_remove(thread victim) {
             return;
         }
         
-        if (victim == threadListHead_sched) {
-            threadListHead_sched = prevThread;
+        if (victim == threadListTail_sched) {
+            threadListTail_sched = prevThread;
         }
         
         prevThread->sched_one = victim->sched_one;
@@ -131,7 +130,7 @@ void libraryList_remove(thread victim) {
  *  arguments for the function, and requested stack size.
  */
 tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
-    fprintf(stderr, "CALLING LWP_CREATE, hello\n");
+//    fprintf(stderr, "CALLING LWP_CREATE, hello\n");
     thread result = calloc(1, sizeof(context));
     size_t stackBytes = (stackSize + 4) * sizeof(unsigned long);
     
@@ -184,11 +183,8 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     }
     
     if (currScheduler == NULL) {
+//        printf("No scheduler available, using defualt\n");
         defaultScheduler_admit(result);
-        
-        if (threadListHead_sched == NULL) {
-            threadListHead_sched = result;
-        }
     }
     
     return result->tid;
@@ -203,7 +199,7 @@ void lwp_exit(void) {
     
     swap_rfiles(&dummyRFile, &oldRFile);
     
-    printf("We're still in lwp_exit boss\n");
+//    printf("We're still in lwp_exit boss\n");
 //    free(currentThread->stack);
 
     
@@ -243,21 +239,32 @@ thread lwp_get_next() {
 }
 
 /**
+ * Remove thread from scheduler or our default sched if there's no scheduler
+ */
+void lwp_remove_sched_thread(thread victim) {
+    if (currScheduler == NULL) {
+        defaultScheduler_remove(victim);
+    }
+    else {
+        currScheduler->remove(victim);
+    }
+}
+
+/**
  * Start all da threads we've lwp_create'd
  */
 void  lwp_start(void) {
-    fprintf(stderr, "CALLING LWP_START heyo\n");
+//    fprintf(stderr, "CALLING LWP_START heyo\n");
     
     thread next = lwp_get_next();
     
     while (next != NULL) {
         currentThread = next;
-        swap_rfiles(&oldRFile, &(threadListHead_sched->state));
+        swap_rfiles(&oldRFile, &(threadListTail_sched->state));
         
         /* lwp_exit and lwp_yield return back to here */
         if (currentThread->tid == 0) {
-            // Free thread
-            defaultScheduler_remove(currentThread);
+            lwp_remove_sched_thread(currentThread);
             
             libraryList_remove(currentThread);
             free(currentThread->stack);
@@ -266,10 +273,7 @@ void  lwp_start(void) {
         
         next = lwp_get_next();
     }
-    
-    printf("Made it back to lwp_start, you know\n");
-    // free(thread), if thread->tid == 0
-    
+//    printf("Made it back to lwp_start, you know\n");
 }
 
 
@@ -287,7 +291,29 @@ void  lwp_stop(void) {
  *  new scheduler.
  */
 void  lwp_set_scheduler(scheduler fun) {
-    fprintf(stderr, "Called lwp_set_scheduler\n");
+    thread transferringThread = lwp_get_next();
+    
+    if (fun == NULL) { /* Revert to default scheduler */
+        while (transferringThread != NULL) {
+            currScheduler->remove(transferringThread);
+            defaultScheduler_admit(transferringThread);
+            
+            transferringThread = currScheduler->next();
+        }
+    }
+    else {
+        /* Switched to a "real" scheduler. Don't keep the old list around */
+        threadListHead_sched = threadListTail_sched = NULL;
+        
+        while (transferringThread != NULL) {
+            currScheduler->remove(transferringThread);
+            fun->admit(transferringThread);
+            
+            transferringThread = transferringThread->lib_one;
+        }
+    }
+    
+    currScheduler = fun;
 }
 
 /**
@@ -332,7 +358,7 @@ void poop(long a) {
     
     printf("HI there you\n");
     printf("yielding\n");
-//    lwp_yield();
+    lwp_yield();
     printf("HI there you\n");
     
     return;
