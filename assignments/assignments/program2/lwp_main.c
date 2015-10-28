@@ -184,7 +184,7 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     
     result->state.rbp = (unsigned long) threadStackBase;
     
-    /* Build linked list of threads */
+    /* Build linked list of threads for our own use */
     if (threadListHead_lib == NULL) {
         threadListHead_lib = result;
     }
@@ -207,8 +207,6 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
  * Call this from a lwp thread to tell it to DIE
  */
 void lwp_exit(void) {
-    thread dummyThread; /* don't  ask */
-    
     swap_rfiles(&dummyRFile, &oldRFile);
 }
 
@@ -216,6 +214,9 @@ void lwp_exit(void) {
  * Call this from a thread to get its ID
  */
 tid_t lwp_gettid(void) {
+    if (currentThread == NULL) {
+        return NO_THREAD;
+    }
     return currentThread->tid;
 }
 
@@ -224,7 +225,6 @@ tid_t lwp_gettid(void) {
  *  to block
  */
 void  lwp_yield(void) {
-    thread dummyThread;
     yieldFlag = 1;
     
     swap_rfiles(&(currentThread->state), &oldRFile);
@@ -349,7 +349,7 @@ thread tid2thread(tid_t tid) {
     thread result = threadListHead_lib;
     
     if (threadListHead_lib == NULL) {
-        return NO_THREAD;
+        return NULL;
     }
     
     while (result != NULL && result->tid != tid) {
@@ -357,7 +357,7 @@ thread tid2thread(tid_t tid) {
     }
     
     if (result == NULL) {
-        return NO_THREAD;
+        return NULL;
     }
     
     return result;
