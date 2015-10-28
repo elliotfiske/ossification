@@ -175,7 +175,6 @@ tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
     memcpy(threadStackBase, &exit_ptr, sizeof(unsigned long));
     
     result->state.rbp = (unsigned long) threadStackBase;
-    
     threadStackBase -= sizeof(unsigned long);
     memcpy(threadStackBase, &functionToRun, sizeof(unsigned long));
     
