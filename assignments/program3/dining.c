@@ -52,6 +52,23 @@ pthread_mutex_t printLock; /* Don't interrupt me when I'm talking! */
 philosopher philosophers[NUM_PHILOSOPHERS];
 
 /**
+ * Error check yo system calls!
+ */
+void safe_unlock(pthread_mutex_t *thread) {
+    if (pthread_mutex_unlock(thread) == -1) {
+        perror("thread unlock:");
+        exit(-1);
+    }
+}
+
+void safe_lock(pthread_mutex_t *thread) {
+    if (pthread_mutex_lock(thread) == -1) {
+        perror("thread lock:");
+        exit(-1);
+    }
+}
+
+/**
  * Print a bunch of equal signs, so that the cells are separate, but equal.
  */
 void divideByEquals() {
@@ -87,7 +104,7 @@ void printStateChange() {
     int i, forkNdx;
     philosopher currPhil;
     
-    pthread_mutex_lock(&printLock);
+    safe_lock(&printLock);
     
     for (i = 0; i < NUM_PHILOSOPHERS; i++) {
         currPhil = philosophers[i];
@@ -127,7 +144,7 @@ void printStateChange() {
     
     printf("|\n");
     
-    pthread_mutex_unlock(&printLock);
+    safe_unlock(&printLock);
 }
 
 /**
@@ -135,12 +152,7 @@ void printStateChange() {
  */
 void snatchFork(int forkID) {
     pthread_mutex_t *lock = forkLocks + forkID;
-    
-//    printf("I WANT FORK %d lock addr %zu\n", fcsorkID, (unsigned long) lock);
-    
-    if(pthread_mutex_lock(lock) != 0) {
-        perror("Error grabbing fork\n");
-    }
+    safe_lock(lock);
 }
 
 /**
@@ -179,6 +191,7 @@ void eat(philosopher *me) {
     
     dawdle();
     me->state = CHANGING;
+    printStateChange();
 }
 
 /**
@@ -192,11 +205,11 @@ void dropForks(philosopher *me) {
         right = 0;
     }
     
-    pthread_mutex_unlock(&(forkLocks[left]));
+    safe_unlock(&(forkLocks[left]));
     me->hasLeftFork = -1;
     printStateChange();
     
-    pthread_mutex_unlock(&(forkLocks[right]));
+    safe_unlock(&(forkLocks[right]));
     me->hasRightFork = -1;
     printStateChange();
 }
@@ -216,7 +229,7 @@ void think(philosopher *me) {
  * Live the dream as a philosopher! Start off hungry (CHANGING), then EAT
  *  so you have the energy to THINK.
  *
- * The sole argument is the struct containing the philosopher's innards.
+ * The sole argument is the id corresponding to the philosopher's innards.
  *  Passed as void * because that's how threads work.
  */
 void *philosophize(void *id) {
@@ -260,10 +273,59 @@ int parseArgumentsToNumCycles(const char * argv[]) {
 }
 
 /**
+ * Set up the philosopher structs, and init the mutex locks
+ */
+void setupPhilosophers(int numCycles) {
+    int i, sys_result;
+    
+    for (i = 0; i < NUM_PHILOSOPHERS; i++) {
+        sys_result = pthread_mutex_init(forkLocks + i, NULL);
+        if (-1 == sys_result) {
+            fprintf(stderr, "Init mutex %i: %s\n", i, strerror(errno));
+            exit(-1);
+        }
+    }
+    
+    for (i = 0; i < NUM_PHILOSOPHERS; i++) {
+        philosophers[i].id = i;
+        philosophers[i].state = CHANGING;
+        philosophers[i].hasLeftFork = philosophers[i].hasRightFork = -1;
+        philosophers[i].cyclesLeft = numCycles;
+    }
+}
+
+/**
+ * Call pthread_create on each of our philosophers to kick 'em off!
+ */
+void startThreads() {
+    int i, sys_result;
+    
+    for (i = 0; i < NUM_PHILOSOPHERS; i++) {
+        sys_result = pthread_create(&(philosophers[i].threadID),
+                                    NULL,
+                                    philosophize,
+                                    &(philosophers[i].id));
+        if (-1 == sys_result) {
+            fprintf(stderr, "Philosopher %i: %s\n", i, strerror(errno));
+            exit(-1);
+        }
+    }
+    
+    /* Wait for my babies to come home */
+    for (i = 0; i < NUM_PHILOSOPHERS; i++) {
+        sys_result = pthread_join((philosophers[i]).threadID, NULL);
+        if (-1 == sys_result) {
+            fprintf(stderr, "Join Philosopher %i: %s\n", i, strerror(errno));
+            exit(-1);
+        }
+    }
+}
+
+/**
  * Create all the philosopher threads and send them on their way.
  */
 int main(int argc, const char * argv[]) {
-    int i, sys_result;
+    int sys_result;
     int numCycles;
     
     if (argc == 1) {
@@ -279,40 +341,12 @@ int main(int argc, const char * argv[]) {
         exit(-1);
     }
     
+    setupPhilosophers(numCycles);
+    
     printHeader();
+    printStateChange();
     
-    for (i = 0; i < NUM_PHILOSOPHERS; i++) {
-        sys_result = pthread_mutex_init(forkLocks + i, NULL);
-        if (-1 == sys_result) {
-            fprintf(stderr, "Init mutex %i: %s\n", i, strerror(errno));
-            exit(-1);
-        }
-    }
-    
-    for (i = 0; i < NUM_PHILOSOPHERS; i++) {
-        philosophers[i].id = i;
-        philosophers[i].state = CHANGING;
-        philosophers[i].hasLeftFork = philosophers[i].hasRightFork = -1;
-        philosophers[i].cyclesLeft = numCycles;
-        
-        sys_result = pthread_create(&(philosophers[i].threadID),
-                                      NULL,
-                                      philosophize,
-                                      &(philosophers[i].id));
-        if (-1 == sys_result) {
-            fprintf(stderr, "Philosopher %i: %s\n", i, strerror(errno));
-            exit(-1);
-        }
-    }
-    
-    /* Wait for my babies to come home */
-    for (i = 0; i < NUM_PHILOSOPHERS; i++) {
-        sys_result = pthread_join((philosophers[i]).threadID, NULL);
-        if (-1 == sys_result) {
-            fprintf(stderr, "Join Philosopher %i: %s\n", i, strerror(errno));
-            exit(-1);
-        }
-    }
+    startThreads(); /* All dining and dozing happens in here */
     
     printStateChange();
     divideByEquals();
@@ -330,7 +364,6 @@ void cleanup() {
     
     for (ndx = 0; ndx < NUM_PHILOSOPHERS; ndx++) {
         sys_result = pthread_mutex_destroy(&(forkLocks[ndx]));
-        
         if (sys_result == -1) {
             fprintf(stderr, "Mutex destroy %i: %s\n", ndx, strerror(errno));
             exit(0);
