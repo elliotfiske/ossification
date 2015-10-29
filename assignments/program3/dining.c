@@ -20,6 +20,8 @@
 void dawdle();
 void cleanup();
 
+char lastMessage[1000] = "| -1---       | -----       | --23-       | -----       | 0----       |";
+
 /**
  * Enum declaring the different states a philosopher can be in.
  */
@@ -47,7 +49,7 @@ const char *PHILOSOPHER_NAMES = "ABCDEFGHIJKLMNOP"; /* Future-proof in case
                                                      */
 
 pthread_mutex_t forkLocks[NUM_PHILOSOPHERS];
-pthread_mutex_t printLock; /* Don't interrupt me when I'm talking! */
+pthread_mutex_t stateChangeLock; /* Don't interrupt me when I'm talking! */
 
 philosopher philosophers[NUM_PHILOSOPHERS];
 
@@ -104,47 +106,55 @@ void printStateChange() {
     int i, forkNdx;
     philosopher currPhil;
     
-    safe_lock(&printLock);
+    char buffer[1000] = "";
     
     for (i = 0; i < NUM_PHILOSOPHERS; i++) {
         currPhil = philosophers[i];
         
-        printf("| ");
+        sprintf(buffer + strlen(buffer), "| ");
         
         for (forkNdx = 0; forkNdx < NUM_PHILOSOPHERS; forkNdx++) {
             if (forkNdx == currPhil.hasLeftFork ||
                 forkNdx == currPhil.hasRightFork) {
-                printf("%d", forkNdx);
+                sprintf(buffer + strlen(buffer), "%d", forkNdx);
             }
             else {
-                printf("-");
+                sprintf(buffer + strlen(buffer), "-");
             }
         }
         
-        printf(" ");
+        sprintf(buffer + strlen(buffer), " ");
         
         if (currPhil.cyclesLeft) {
             switch (currPhil.state) {
                 case THINKING:
-                    printf("%-6s", "Think");
+                    sprintf(buffer + strlen(buffer), "%-6s", "Think");
                     break;
                 case EATING:
-                    printf("%-6s", "Eat");
+                    sprintf(buffer + strlen(buffer), "%-6s", "Eat");
                     break;
                 case CHANGING:
                 default:
-                    printf("%-6s", "");
+                    sprintf(buffer + strlen(buffer), "%-6s", "");
                     break;
             }
         }
         else {
-            printf("%-6s", "");
+            sprintf(buffer + strlen(buffer), "%-6s", "");
         }
     }
     
-    printf("|\n");
+    sprintf(buffer + strlen(buffer), "|\n");
     
-    safe_unlock(&printLock);
+    if (strcmp(buffer, lastMessage) == 0) {
+        printf("uh oh\n");
+    }
+    else {
+        strcpy(lastMessage, buffer);
+    }
+    printf("%s", buffer);
+    
+    safe_unlock(&stateChangeLock);
 }
 
 /**
@@ -162,7 +172,10 @@ void takeLeftFork(philosopher *me) {
     int target = me->id;
     
     snatchFork(target);
+    
+    safe_lock(&stateChangeLock);
     me->hasLeftFork = target;
+    // printf("changing state after %c taking left fork\n", PHILOSOPHER_NAMES[me->id]);
     printStateChange();
 }
 
@@ -177,7 +190,10 @@ void takeRightFork(philosopher *me) {
     }
     
     snatchFork(target);
+    safe_lock(&stateChangeLock);
     me->hasRightFork = target;
+    
+//    // printf("changing state after %c taking right fork\n", PHILOSOPHER_NAMES[me->id]);
     printStateChange();
 }
 
@@ -185,12 +201,18 @@ void takeRightFork(philosopher *me) {
  * Om nom nom nom
  */
 void eat(philosopher *me) {
+    safe_lock(&stateChangeLock);
     me->state = EATING;
     
+    
+//    // printf("changing state after %c becoming EAT\n", PHILOSOPHER_NAMES[me->id]);
     printStateChange();
     
     dawdle();
+    safe_lock(&stateChangeLock);
     me->state = CHANGING;
+    
+    // printf("changing state after becoming CHANGE from EAT\n");
     printStateChange();
 }
 
@@ -206,11 +228,17 @@ void dropForks(philosopher *me) {
     }
     
     safe_unlock(&(forkLocks[left]));
+    safe_lock(&stateChangeLock);
     me->hasLeftFork = -1;
+    
+    // printf("changing state after dropping left fork\n");
     printStateChange();
     
     safe_unlock(&(forkLocks[right]));
+    safe_lock(&stateChangeLock);
     me->hasRightFork = -1;
+    
+    // printf("changing state after dropping right fork\n");
     printStateChange();
 }
 
@@ -218,11 +246,18 @@ void dropForks(philosopher *me) {
  * Think things over.
  */
 void think(philosopher *me) {
+    safe_lock(&stateChangeLock);
     me->state = THINKING;
+    
+    // printf("changing state after starting to EAT\n");
     printStateChange();
     
     dawdle();
+    safe_lock(&stateChangeLock);
     me->state = CHANGING;
+    
+    // printf("changing state after starting to CHANGE from THINK\n");
+    printStateChange();
 }
 
 /**
@@ -335,7 +370,7 @@ int main(int argc, const char * argv[]) {
         numCycles = parseArgumentsToNumCycles(argv);
     }
     
-    sys_result = pthread_mutex_init(&printLock, NULL);
+    sys_result = pthread_mutex_init(&stateChangeLock, NULL);
     if (-1 == sys_result) {
         fprintf(stderr, "Init print mutex: %s\n", strerror(errno));
         exit(-1);
@@ -348,7 +383,6 @@ int main(int argc, const char * argv[]) {
     
     startThreads(); /* All dining and dozing happens in here */
     
-    printStateChange();
     divideByEquals();
     
     cleanup();
