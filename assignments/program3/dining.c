@@ -17,16 +17,19 @@
 #define NUM_PHILOSOPHERS 5
 #define DEFAULT_NUM_CYCLES 1
 
+/* How many characters do we need the "Eat" or "Think" to take up */
+#define STATE_MESSAGE_PRINTED_LEN 6
+/* The buffer needs to be 1 bigger to hold null character */
+#define STATE_MESSAGE_BUFFER_LEN STATE_MESSAGE_PRINTED_LEN + 1
+
 void dawdle();
 void cleanup();
-
-char lastMessage[1000] = "| -1---       | -----       | --23-       | -----       | 0----       |";
 
 /**
  * Enum declaring the different states a philosopher can be in.
  */
 typedef enum {
-    EATING, THINKING, CHANGING
+    EATING, THINKING, CHANGING, DONE
 } philState;
 
 /**
@@ -105,54 +108,45 @@ void printHeader() {
 void printStateChange() {
     int i, forkNdx;
     philosopher currPhil;
-    
-    char buffer[1000] = "";
+    char stateMessage[STATE_MESSAGE_BUFFER_LEN];
     
     for (i = 0; i < NUM_PHILOSOPHERS; i++) {
         currPhil = philosophers[i];
         
-        sprintf(buffer + strlen(buffer), "| ");
+        printf("| ");
         
         for (forkNdx = 0; forkNdx < NUM_PHILOSOPHERS; forkNdx++) {
             if (forkNdx == currPhil.hasLeftFork ||
                 forkNdx == currPhil.hasRightFork) {
-                sprintf(buffer + strlen(buffer), "%d", forkNdx);
+                printf("%d", forkNdx);
             }
             else {
-                sprintf(buffer + strlen(buffer), "-");
+                printf("-");
             }
         }
         
-        sprintf(buffer + strlen(buffer), " ");
+        printf(" ");
         
-        if (currPhil.cyclesLeft) {
-            switch (currPhil.state) {
-                case THINKING:
-                    sprintf(buffer + strlen(buffer), "%-6s", "Think");
-                    break;
-                case EATING:
-                    sprintf(buffer + strlen(buffer), "%-6s", "Eat");
-                    break;
-                case CHANGING:
-                default:
-                    sprintf(buffer + strlen(buffer), "%-6s", "");
-                    break;
-            }
+        switch (currPhil.state) {
+            case THINKING:
+                strcpy(stateMessage, "Think");
+                break;
+                
+            case EATING:
+                strcpy(stateMessage, "Eat");
+                break;
+                
+            case DONE: /* If I'm DONE or CHANGING, don't print anything */
+            case CHANGING:
+            default:
+                strcpy(stateMessage, "");
+                break;
         }
-        else {
-            sprintf(buffer + strlen(buffer), "%-6s", "");
-        }
+        
+        printf("%-*s", STATE_MESSAGE_PRINTED_LEN, stateMessage);
     }
     
-    sprintf(buffer + strlen(buffer), "|\n");
-    
-    if (strcmp(buffer, lastMessage) == 0) {
-        printf("uh oh\n");
-    }
-    else {
-        strcpy(lastMessage, buffer);
-    }
-    printf("%s", buffer);
+    printf("|\n");
     
     safe_unlock(&stateChangeLock);
 }
@@ -286,6 +280,8 @@ void *philosophize(void *id) {
         
         me->cyclesLeft--;
     }
+    
+    me->state = DONE;
     
     return NULL;
 }
