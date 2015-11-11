@@ -16,7 +16,7 @@ HUNGRYOBJS = hungrymain.o
 
 NUMOBJS    = numbersmain.o
 
-OBJS	= $(SNAKEOBJS) $(HUNGRYOBJS) $(NUMOBJS) 
+OBJS	= $(SNAKEOBJS) $(HUNGRYOBJS) $(NUMOBJS) lwp_main.o 
 
 EXTRACLEAN = core $(PROGS)
 
@@ -24,11 +24,19 @@ EXTRACLEAN = core $(PROGS)
 all: liblwp.so
 
 liblwp.so: lwp_main.o
-	$(CC) $(CFLAGS) -shared -fPIC -o liblwp.so lwp_main.o
+	$(CC) $(CFLAGS) -shared -fpic lwp_main.o magic64.o -o liblwp.so
 
-lib_exec:
-	gcc -fPIC lwp_main.c magic64.S -g -o lib_exec
+lwp_main.o:
+	$(CC) $(CFLAGS) -c -g -fpic lwp_main.c magic64.S
+
+lib_exec: lwp_main.c magic64.S
+	gcc -fPIC lwp_main.c magic64.S -g -O0 -o lib_exec
 # End Bread 'n Butta -----------------#
+
+his: hungrymain.o snakemain.o numbermain.o
+	$(LD) $(LDFLAGS) -o his-snakes snakemain.o -L. -lncurses -lsnakes -lPLN
+	$(LD) $(LDFLAGS) -o his-hungry hungrymain.o -L. -lncurses -lsnakes -lPLN
+	$(LD) $(LDFLAGS) -o his-nums numbersmain.o -L. -lPLN
 
 
 # Cleanliness.next() == Godliness
@@ -37,6 +45,8 @@ allclean: clean
 
 clean:	
 	rm -f $(OBJS) *~ TAGS
+	rm -f liblwp.so
+	rm -f lib_exec
 
 # Generates test executables (snake game + number printer)
 test: $(PROGS)
