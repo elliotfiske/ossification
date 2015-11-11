@@ -13,6 +13,7 @@
 #include <limits.h>
 #include <pthread.h>
 #include <string.h>
+#include <sys/time.h>
 
 #define NUM_PHILOSOPHERS 5
 #define DEFAULT_NUM_CYCLES 1
@@ -52,7 +53,8 @@ const char *PHILOSOPHER_NAMES = "ABCDEFGHIJKLMNOP"; /* Future-proof in case
                                                      */
 
 pthread_mutex_t forkLocks[NUM_PHILOSOPHERS];
-pthread_mutex_t stateChangeLock; /* Don't interrupt me when I'm talking! */
+pthread_mutex_t stateChangeLock; /* Don't interrupt me when I'm talking!
+                                  *  (or changing the philosophers[] array) */
 
 philosopher philosophers[NUM_PHILOSOPHERS];
 
@@ -169,7 +171,6 @@ void takeLeftFork(philosopher *me) {
     
     safe_lock(&stateChangeLock);
     me->hasLeftFork = target;
-    // printf("changing state after %c taking left fork\n", PHILOSOPHER_NAMES[me->id]);
     printStateChange();
 }
 
@@ -184,10 +185,9 @@ void takeRightFork(philosopher *me) {
     }
     
     snatchFork(target);
+    
     safe_lock(&stateChangeLock);
     me->hasRightFork = target;
-    
-//    // printf("changing state after %c taking right fork\n", PHILOSOPHER_NAMES[me->id]);
     printStateChange();
 }
 
@@ -197,16 +197,12 @@ void takeRightFork(philosopher *me) {
 void eat(philosopher *me) {
     safe_lock(&stateChangeLock);
     me->state = EATING;
-    
-    
-//    // printf("changing state after %c becoming EAT\n", PHILOSOPHER_NAMES[me->id]);
     printStateChange();
     
     dawdle();
+    
     safe_lock(&stateChangeLock);
     me->state = CHANGING;
-    
-    // printf("changing state after becoming CHANGE from EAT\n");
     printStateChange();
 }
 
@@ -222,17 +218,15 @@ void dropForks(philosopher *me) {
     }
     
     safe_unlock(&(forkLocks[left]));
+    
     safe_lock(&stateChangeLock);
     me->hasLeftFork = -1;
-    
-    // printf("changing state after dropping left fork\n");
     printStateChange();
     
     safe_unlock(&(forkLocks[right]));
+    
     safe_lock(&stateChangeLock);
     me->hasRightFork = -1;
-    
-    // printf("changing state after dropping right fork\n");
     printStateChange();
 }
 
@@ -242,15 +236,12 @@ void dropForks(philosopher *me) {
 void think(philosopher *me) {
     safe_lock(&stateChangeLock);
     me->state = THINKING;
-    
-    // printf("changing state after starting to EAT\n");
     printStateChange();
     
     dawdle();
+    
     safe_lock(&stateChangeLock);
     me->state = CHANGING;
-    
-    // printf("changing state after starting to CHANGE from THINK\n");
     printStateChange();
 }
 
@@ -291,16 +282,17 @@ void *philosophize(void *id) {
  *  If they did something weird, shout at them and exit.
  */
 int parseArgumentsToNumCycles(const char * argv[]) {
-    long numCycles = strtol(argv[1], NULL, 10);
-    int result;
+    char *errCheck;
+    long numCycles = strtol(argv[1], &errCheck, 10);
     
-    if (errno != 0 || numCycles > INT_MAX) {
+    if (errno != 0 || *errCheck != '\0'
+        || numCycles > INT_MAX || numCycles < 0) {
         printf("Bad first argument %s. Usage: %s <number of cycles>\n",
                argv[1], argv[0]);
         exit(-1);
     }
     
-    return result;
+    return (int) numCycles;
 }
 
 /**
@@ -358,6 +350,7 @@ void startThreads() {
 int main(int argc, const char * argv[]) {
     int sys_result;
     int numCycles;
+    struct timeval time;
     
     if (argc == 1) {
         numCycles = DEFAULT_NUM_CYCLES;
@@ -365,6 +358,10 @@ int main(int argc, const char * argv[]) {
     else {
         numCycles = parseArgumentsToNumCycles(argv);
     }
+    
+    /* Random seed */
+    gettimeofday(&time, NULL);
+    srand(time.tv_sec + time.tv_usec);
     
     sys_result = pthread_mutex_init(&stateChangeLock, NULL);
     if (-1 == sys_result) {
