@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <minix/ds.h>
 #include <minix/const.h>
+#include <sys/ucred.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "secrets.h"
 
 /*
@@ -11,6 +14,7 @@
  */
 FORWARD _PROTOTYPE( char * secret_name,   (void) );
 FORWARD _PROTOTYPE( int secret_open,      (struct driver *d, message *m) );
+FORWARD _PROTOTYPE( int secret_ioctl,      (struct driver *d, message *m) );
 FORWARD _PROTOTYPE( int secret_close,     (struct driver *d, message *m) );
 FORWARD _PROTOTYPE( struct device * secret_prepare, (int device) );
 FORWARD _PROTOTYPE( int secret_transfer,  (int procnr, int opcode,
@@ -30,7 +34,7 @@ PRIVATE struct driver secret_tab =
     secret_name,
     secret_open,
     secret_close,
-    nop_ioctl,
+    secret_ioctl,
     secret_prepare,
     secret_transfer,
     nop_cleanup,
@@ -54,7 +58,7 @@ PRIVATE int open_counter;
 /** How big a secret are we holding onto? */
 PRIVATE unsigned long secret_size;
 /** Owner's name TODO: wut */
-PRIVATE char owner[1000];
+PRIVATE int owner;
 /** How many processes are reading this secret right now? */
 PRIVATE int num_reading_secret;
 /** If the user didn't finish reading, save their spot till next time. */
@@ -73,6 +77,15 @@ PRIVATE int secret_open(d, m)
     struct driver *d;
     message *m;
 {
+    int res;
+    struct ucred opening_user;
+
+    res = getnucred(m->IO_ENDPT, &opening_user);
+    if (res == -1) {
+        perror("getnucred");
+        return EACCES;
+    }
+
     if ((m->COUNT & R_BIT) && (m->COUNT & W_BIT)) {
         /* Read-Write access not allowed!  What's the point
          *  of telling a secret to yourself?? */
@@ -82,13 +95,15 @@ PRIVATE int secret_open(d, m)
     if (m->COUNT & R_BIT) {
         if (device_state == DEVICE_STATE_EMPTY) {
             /* No secrets here! Try again later. */
-            return ENOENT;
+            return EACCES;
         } else if (device_state == DEVICE_STATE_BEING_WRITTEN) {
             /* Somebody's writing a secret now.  Don't interrupt them,
              *  that would be RUDE. */
             return EACCES;
         }
-
+        else if (device_state == DEVICE_STATE_FULL) {
+            if ()
+        }
         /* TODO: check if they are the owner of this secret, tell them NO if they're not */
     }
     else if (m->COUNT & W_BIT) {
@@ -96,6 +111,11 @@ PRIVATE int secret_open(d, m)
             /** You can't write right now, right?  Wait 'till it's empty boss. */
             return EACCES;
         }
+
+
+        owner = opening_user.uid;
+        /*printf("Hey! My new slave-owner is uid %d, pid %d, gid %d, proc # is %d\n", writing_user.uid, writing_user.pid, writing_user.gid, proc_nr);*/
+        printf("Hey! My new slave-owner is uid %d, pid %d, gid %d from m_source %d\n", opening_user.uid, opening_user.pid, opening_user.gid, m->m_source);
     }
 
     printf("secret_open(). Called %d time(s). m_type: %d m_COUNT: %x\n", ++open_counter, m->m_type, m->COUNT);
@@ -121,6 +141,14 @@ PRIVATE int secret_close(d, m)
          /* TODO: this */
     }
 
+    return OK;
+}
+
+PRIVATE int secret_ioctl(d, m)
+    struct driver *d;
+    message *m;
+{
+    printf("IOCTL\nIOCTL\nIOCTL\nIOCTL\n");
     return OK;
 }
 
@@ -166,7 +194,8 @@ PRIVATE int do_write(proc_nr, iov, bytes)
     iovec_t *iov;
     int bytes;
 {
-    int ret;
+    int ret, res;
+    struct ucred writing_user;
 
     if (device_state != DEVICE_STATE_EMPTY) {
         printf("Too bad! I'm full.\n");
@@ -181,6 +210,13 @@ PRIVATE int do_write(proc_nr, iov, bytes)
     secret_posn = 0;
 
     device_state = DEVICE_STATE_BEING_WRITTEN;
+
+    res = getnucred(proc_nr, &writing_user);
+    if (res == -1) {
+        perror("getnucred");
+        return EACCES;
+    }
+
 
     return ret;
 }

@@ -8,7 +8,7 @@
 char *msg = "Hello, secret keeper!";
 
 int main(int argc, char *argv[]) {
-	int fd = open("/dev/Secret", O_RDWR);
+	int fd = open("/dev/Secret", O_WRONLY);
 	int res, uid;
 
 	printf("Opening... fd=%d\n",fd);
