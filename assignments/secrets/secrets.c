@@ -56,6 +56,8 @@ PRIVATE unsigned long secret_size;
 PRIVATE char owner[1000];
 /** If the user didn't finish reading, save their spot till next time. */
 PRIVATE unsigned long secret_posn;
+/** State of the device driver. */
+PRIVATE int device_state;
 
 
 PRIVATE char * hello_name(void)
@@ -85,7 +87,7 @@ PRIVATE struct device * hello_prepare(dev)
 {
     hello_device.dv_base.lo = 0;
     hello_device.dv_base.hi = 0;
-    hello_device.dv_size.lo = strlen(HELLO_MESSAGE);
+    hello_device.dv_size.lo = SECRET_SIZE;
     hello_device.dv_size.hi = 0;
     return &hello_device;
 }
@@ -97,6 +99,43 @@ void debug_printf(char *s) {
     }
 }
 
+PRIVATE int do_read(proc_nr, iov, bytes)
+    int proc_nr;
+    iovec_t *iov;
+    int bytes;
+{
+    int ret;
+
+    /*if (device_state != DEVICE_STATE_FULL) {
+        return ENOSPC;
+    }*/
+
+    ret = sys_safecopyto(proc_nr, iov->iov_addr, 0,
+                      (vir_bytes) (secret + secret_posn),
+                       bytes, D);
+    iov->iov_size -= bytes;
+    secret_posn += bytes;
+
+    return ret;
+}
+
+PRIVATE int do_write(proc_nr, iov, bytes)
+    int proc_nr;
+    iovec_t *iov;
+    int bytes;
+{
+    int ret;
+
+    /* Prevent user from writing past end of buffer */
+    ret = sys_safecopyfrom(proc_nr, iov->iov_addr, 0, 
+                          (vir_bytes) (secret),
+                          iov->iov_size, D);
+    iov->iov_size -= bytes;
+    secret_posn = 0;
+
+    return ret;
+}
+
 PRIVATE int hello_transfer(proc_nr, opcode, position, iov, nr_req)
     int proc_nr;
     int opcode;
@@ -105,19 +144,6 @@ PRIVATE int hello_transfer(proc_nr, opcode, position, iov, nr_req)
     unsigned nr_req;
 {
     int bytes, ret;
-    char buff[SECRET_SIZE];
-
-    debug_printf("lel\n");
-    /*sys_safecopyfrom(proc_nr, (vir_bytes) iov->iov_addr, 0, 
-                      (vir_bytes) (buff),
-                      iov->iov_size, D);*/
-    debug_printf("lol\n");
-
-    /*debug_printf("buff: %p, *buff: %s\n", buff, buff);*/
-
-    /*printf("hello_transfer() opcode: %d, position: %d, iov_addr: %s, iov_size: %d\n", opcode, position, buff, iov->iov_size);*/
-
-    debug_printf("kek\n");
 
     bytes = SECRET_SIZE - secret_posn < iov->iov_size ?
              SECRET_SIZE - secret_posn : iov->iov_size;
@@ -135,22 +161,14 @@ PRIVATE int hello_transfer(proc_nr, opcode, position, iov, nr_req)
     {
         case DEV_GATHER_S:
              debug_printf("3\n");
-                 ret = sys_safecopyto(proc_nr, iov->iov_addr, 0,
-                                      (vir_bytes) (secret + secret_posn),
-                                       bytes, D);
-            iov->iov_size -= bytes;
-            secret_posn += bytes;
+             ret = do_read(proc_nr, iov, bytes);
             break;
         case DEV_SCATTER_S:
              debug_printf("4\n");
             
-            /* Prevent user from writing past end of buffer */
-                ret = sys_safecopyfrom(proc_nr, iov->iov_addr, 0, 
-                                      (vir_bytes) (secret),
-                                      iov->iov_size, D);
-                iov->iov_size -= bytes;
-                secret_posn = 0;
+                ret = do_write(proc_nr, iov, bytes);
             break;
+
 
         default:
 
