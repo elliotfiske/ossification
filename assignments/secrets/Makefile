@@ -1,5 +1,5 @@
 # Makefile for the hello driver.
-PROG=	secret_driver
+PROG=	secretkeeper
 SRCS=	secrets.c
 
 DPADD+=	${LIBDRIVER} ${LIBSYS}

@@ -44,8 +44,19 @@ PRIVATE struct driver hello_tab =
 /** Represents the /dev/hello device. */
 PRIVATE struct device hello_device;
 
+/** Actual secret */
+PRIVATE char secret[SECRET_SIZE];
+
+/* DEVICE STATE */
 /** State variable to count the number of times the device has been opened. */
 PRIVATE int open_counter;
+/** How big a secret are we holding onto? */
+PRIVATE unsigned long secret_size;
+/** Owner's name TODO: wut */
+PRIVATE char owner[1000];
+/** If the user didn't finish reading, save their spot till next time. */
+PRIVATE unsigned long secret_posn;
+
 
 PRIVATE char * hello_name(void)
 {
@@ -79,6 +90,13 @@ PRIVATE struct device * hello_prepare(dev)
     return &hello_device;
 }
 
+int debug = 0;
+void debug_printf(char *s) {
+    if (debug) {
+        printf("%s", s);
+    }
+}
+
 PRIVATE int hello_transfer(proc_nr, opcode, position, iov, nr_req)
     int proc_nr;
     int opcode;
@@ -87,28 +105,68 @@ PRIVATE int hello_transfer(proc_nr, opcode, position, iov, nr_req)
     unsigned nr_req;
 {
     int bytes, ret;
+    size_t how_much_to_read;
+    char buff[SECRET_SIZE];
 
-    printf("hello_transfer()\n");
+    debug_printf("lel\n");
+    /*sys_safecopyfrom(proc_nr, (vir_bytes) iov->iov_addr, 0, 
+                      (vir_bytes) (buff),
+                      iov->iov_size, D);*/
+    debug_printf("lol\n");
+
+    /*debug_printf("buff: %p, *buff: %s\n", buff, buff);*/
+
+    /*printf("hello_transfer() opcode: %d, position: %d, iov_addr: %s, iov_size: %d\n", opcode, position, buff, iov->iov_size);*/
+    printf("IOv size: %d\n", iov->iov_size);
+
+    debug_printf("kek\n");
 
     bytes = strlen(HELLO_MESSAGE) - position.lo < iov->iov_size ?
-            strlen(HELLO_MESSAGE) - position.lo : iov->iov_size;
+             strlen(HELLO_MESSAGE) - position.lo : iov->iov_size;
+
+             debug_printf("1\n");
 
     if (bytes <= 0)
     {
+             debug_printf("bad 2\n");
         return OK;
     }
     switch (opcode)
     {
         case DEV_GATHER_S:
+             debug_printf("3\n");
+             how_much_to_read = bytes;
+            if (how_much_to_read > SECRET_SIZE) {
+                how_much_to_read = SECRET_SIZE;
+            }
+            printf("secret is being read and is: %s, bytes is %d\n", secret, bytes);
             ret = sys_safecopyto(proc_nr, iov->iov_addr, 0,
-                                (vir_bytes) (HELLO_MESSAGE + position.lo),
-                                 bytes, D);
-            iov->iov_size -= bytes;
+                              (vir_bytes) (HELLO_MESSAGE),
+                               bytes, D);
+            break;
+        case DEV_SCATTER_S:
+             debug_printf("4\n");
+            
+            /* Prevent user from writing past end of buffer */
+            if (iov->iov_size < SECRET_SIZE) { 
+                ret = sys_safecopyfrom(proc_nr, iov->iov_addr, 0, 
+                                      (vir_bytes) (secret),
+                                      iov->iov_size, D);
+                printf("secret is now: %s\n", secret);
+            }
+            else {
+                printf("Tried to write past end of buff\n");
+                return OK;
+            }
             break;
 
         default:
+
+             debug_printf("5\n");
             return EINVAL;
     }
+
+             debug_printf("6\n");
     return ret;
 }
 
