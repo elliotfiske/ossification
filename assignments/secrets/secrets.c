@@ -5,6 +5,7 @@
 #include <minix/ds.h>
 #include <minix/const.h>
 #include <sys/ucred.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "secrets.h"
@@ -56,13 +57,13 @@ PRIVATE char secret[SECRET_SIZE];
 /** State variable to count the number of times the device has been opened. */
 PRIVATE int open_counter;
 /** How big a secret are we holding onto? */
-PRIVATE unsigned long secret_size;
+PRIVATE int secret_size;
 /** Owner's name TODO: wut */
 PRIVATE int owner;
 /** How many processes are reading this secret right now? */
 PRIVATE int num_reading_secret;
 /** If the user didn't finish reading, save their spot till next time. */
-PRIVATE unsigned long secret_posn;
+PRIVATE int secret_posn;
 /** State of the device driver. */
 PRIVATE int device_state;
 
@@ -102,13 +103,19 @@ PRIVATE int secret_open(d, m)
             return EACCES;
         }
         else if (device_state == DEVICE_STATE_FULL) {
-            if ()
+            if (opening_user.uid == owner) {
+                open_counter++;
+                return OK;
+            }
+            else {
+                /* That's not your secret! */
+                return EACCES;
+            }
         }
-        /* TODO: check if they are the owner of this secret, tell them NO if they're not */
     }
     else if (m->COUNT & W_BIT) {
         if (device_state != DEVICE_STATE_EMPTY) {
-            /** You can't write right now, right?  Wait 'till it's empty boss. */
+            /** You can't write right now.  Wait 'till it's empty boss. */
             return EACCES;
         }
 
@@ -138,7 +145,13 @@ PRIVATE int secret_close(d, m)
          * We're currently being read by some processes, and one closed.
          *  If there's nobody left reading us, it's safe to close and destroy the secret.
          */
-         /* TODO: this */
+         open_counter--;
+         if (open_counter == 0) {
+            /* Wipe secret */
+            memset(secret, 0, SECRET_SIZE);
+            secret_size = 0;
+            device_state = DEVICE_STATE_EMPTY;
+         }
     }
 
     return OK;
@@ -148,8 +161,32 @@ PRIVATE int secret_ioctl(d, m)
     struct driver *d;
     message *m;
 {
+    int res;
+    struct ucred opening_user;
+    uid_t grantee;
+
+    res = getnucred(m->IO_ENDPT, &opening_user);
+    if (res == -1) {
+        perror("getnucred");
+        return EACCES;
+    }
+
+    if (m->REQUEST != SSGRANT) {
+        return ENOTTY;
+    }
+
+    if (opening_user.uid != owner) {
+        return EACCES;
+    }
+
+    res = sys_safecopyfrom(m->IO_ENDPT, (vir_bytes)m->IO_GRANT,
+                             0, (vir_bytes)&grantee, sizeof(grantee), D);
     printf("IOCTL\nIOCTL\nIOCTL\nIOCTL\n");
-    return OK;
+    printf("IOCTL new owner is %d\n", grantee);
+
+    owner = grantee;
+
+    return res;
 }
 
 PRIVATE struct device * secret_prepare(dev)
@@ -194,8 +231,7 @@ PRIVATE int do_write(proc_nr, iov, bytes)
     iovec_t *iov;
     int bytes;
 {
-    int ret, res;
-    struct ucred writing_user;
+    int ret;
 
     if (device_state != DEVICE_STATE_EMPTY) {
         printf("Too bad! I'm full.\n");
@@ -211,12 +247,7 @@ PRIVATE int do_write(proc_nr, iov, bytes)
 
     device_state = DEVICE_STATE_BEING_WRITTEN;
 
-    res = getnucred(proc_nr, &writing_user);
-    if (res == -1) {
-        perror("getnucred");
-        return EACCES;
-    }
-
+    secret_size = iov->iov_size;
 
     return ret;
 }
@@ -271,8 +302,13 @@ PRIVATE void secret_geometry(entry)
 }
 
 PRIVATE int sef_cb_lu_state_save(int state) {
-/* Save the state. */
+    /* Save the state. */
     ds_publish_u32("open_counter", open_counter, DSF_OVERWRITE);
+    ds_publish_u32("secret_size", secret_size, DSF_OVERWRITE);
+    ds_publish_u32("owner", owner, DSF_OVERWRITE);
+    ds_publish_u32("num_reading_secret", num_reading_secret, DSF_OVERWRITE);
+    ds_publish_u32("secret_posn", secret_posn, DSF_OVERWRITE);
+    ds_publish_u32("device_state", device_state, DSF_OVERWRITE);
 
     return OK;
 }
@@ -284,6 +320,26 @@ PRIVATE int lu_state_restore() {
     ds_retrieve_u32("open_counter", &value);
     ds_delete_u32("open_counter");
     open_counter = (int) value;
+
+    ds_retrieve_u32("secret_size", &value);
+    ds_delete_u32("secret_size");
+    secret_size = (int) value;
+
+    ds_retrieve_u32("owner", &value);
+    ds_delete_u32("owner");
+    owner = (int) value;
+
+    ds_retrieve_u32("num_reading_secret", &value);
+    ds_delete_u32("num_reading_secret");
+    num_reading_secret = (int) value;
+
+    ds_retrieve_u32("secret_posn", &value);
+    ds_delete_u32("secret_posn");
+    secret_posn = (int) value;
+    
+    ds_retrieve_u32("device_state", &value);
+    ds_delete_u32("device_state");
+    device_state = (int) value;
 
     return OK;
 }
@@ -319,6 +375,12 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
     open_counter = 0;
     switch(type) {
         case SEF_INIT_FRESH:
+            /* INITIAL STARTUP STATE */
+            do_announce_driver = FALSE;
+            open_counter = 0;
+            secret_size = 0;
+            num_reading_secret = 0;
+            secret_posn = 0;
             device_state = DEVICE_STATE_EMPTY;  
             printf("STARTIN UP BUTTERCUP %s", SECRET_MESSAGE);
         break;
@@ -326,7 +388,6 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
         case SEF_INIT_LU:
             /* Restore the state. */
             lu_state_restore();
-            do_announce_driver = FALSE;
 
             printf("%sHey, I'm a new version!\n", SECRET_MESSAGE);
         break;

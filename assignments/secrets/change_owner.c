@@ -8,12 +8,17 @@
 char *msg = "Hello, secret keeper!";
 
 int main(int argc, char *argv[]) {
-	int fd = open("/dev/Secret", O_WRONLY);
+	int fd = open("/dev/Secret", O_RDONLY);
 	int res, uid;
 
-	printf("Opening... fd=%d\n",fd);
+	if (fd == -1) {
+		perror("file open");
+		exit(-1);
+	}
+
+	 /*printf("Opening... fd=%d\n",fd);
 	res = write(fd, msg, strlen(msg));
-	printf("Writing... res=%d\n",res);
+	 printf("Writing... res=%d\n",res); */ 
 
 	/* try grant */
 	if ( argc > 1 && 0 != (uid = atoi(argv[1]))) {
