@@ -148,9 +148,9 @@ PRIVATE int hello_transfer(proc_nr, opcode, position, iov, nr_req)
     bytes = SECRET_SIZE - secret_posn < iov->iov_size ?
              SECRET_SIZE - secret_posn : iov->iov_size;
 
-    printf("Bytes = %d, strlen hello = %d, position.lo = %d, iov_size = %d\n", bytes, strlen(HELLO_MESSAGE), position.lo, iov->iov_size);
+    printf("Bytes = %d, strlen hello = %d, position.lo = %d, iov_size = %d, secret_posn = %d\n", bytes, strlen(HELLO_MESSAGE), position.lo, iov->iov_size, secret_posn);
 
-             debug_printf("1\n");
+    debug_printf("1\n");
 
     if (bytes <= 0)
     {
