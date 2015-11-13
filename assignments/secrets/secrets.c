@@ -93,16 +93,21 @@ PRIVATE int secret_open(d, m)
         return EACCES;
     }
 
+    printf("State: %d\n", device_state);
+
     if (m->COUNT & R_BIT) {
+        printf("1\n");
         if (device_state == DEVICE_STATE_EMPTY) {
             /* No secrets here! Try again later. */
-            return EACCES;
+            return OK;
         } else if (device_state == DEVICE_STATE_BEING_WRITTEN) {
+            printf("2\n");
             /* Somebody's writing a secret now.  Don't interrupt them,
              *  that would be RUDE. */
             return EACCES;
         }
         else if (device_state == DEVICE_STATE_FULL) {
+            printf("Trying to read device. I am %d and owner is %d\n", opening_user.uid, owner);
             if (opening_user.uid == owner) {
                 open_counter++;
                 return OK;
@@ -114,18 +119,18 @@ PRIVATE int secret_open(d, m)
         }
     }
     else if (m->COUNT & W_BIT) {
+        printf("3\n");
         if (device_state != DEVICE_STATE_EMPTY) {
+            printf("4\n");
             /** You can't write right now.  Wait 'till it's empty boss. */
-            return EACCES;
+            return ENOSPC;
         }
 
-
         owner = opening_user.uid;
-        /*printf("Hey! My new slave-owner is uid %d, pid %d, gid %d, proc # is %d\n", writing_user.uid, writing_user.pid, writing_user.gid, proc_nr);*/
-        printf("Hey! My new slave-owner is uid %d, pid %d, gid %d from m_source %d\n", opening_user.uid, opening_user.pid, opening_user.gid, m->m_source);
     }
 
-    printf("secret_open(). Called %d time(s). m_type: %d m_COUNT: %x\n", ++open_counter, m->m_type, m->COUNT);
+    printf("5\n");
+
     return OK;
 }
 
@@ -133,8 +138,6 @@ PRIVATE int secret_close(d, m)
     struct driver *d;
     message *m;
 {
-    printf("secret_close()\n");
-
     /** If someone is in-progress writing to us and they
      *   close, we know it's safe to say we're full. */
     if (device_state == DEVICE_STATE_BEING_WRITTEN) {
@@ -181,8 +184,6 @@ PRIVATE int secret_ioctl(d, m)
 
     res = sys_safecopyfrom(m->IO_ENDPT, (vir_bytes)m->IO_GRANT,
                              0, (vir_bytes)&grantee, sizeof(grantee), D);
-    printf("IOCTL\nIOCTL\nIOCTL\nIOCTL\n");
-    printf("IOCTL new owner is %d\n", grantee);
 
     owner = grantee;
 
@@ -199,13 +200,6 @@ PRIVATE struct device * secret_prepare(dev)
     return &hello_device;
 }
 
-int debug = 0;
-void debug_printf(char *s) {
-    if (debug) {
-        printf("%s", s);
-    }
-}
-
 PRIVATE int do_read(proc_nr, iov, bytes)
     int proc_nr;
     iovec_t *iov;
@@ -214,7 +208,7 @@ PRIVATE int do_read(proc_nr, iov, bytes)
     int ret;
 
     if (device_state != DEVICE_STATE_FULL) {
-        return EACCES;
+        return OK;
     }
 
     ret = sys_safecopyto(proc_nr, iov->iov_addr, 0,
@@ -234,7 +228,6 @@ PRIVATE int do_write(proc_nr, iov, bytes)
     int ret;
 
     if (device_state != DEVICE_STATE_EMPTY) {
-        printf("Too bad! I'm full.\n");
         return EACCES;
     }
 
@@ -264,38 +257,29 @@ PRIVATE int secret_transfer(proc_nr, opcode, position, iov, nr_req)
     bytes = SECRET_SIZE - secret_posn < iov->iov_size ?
              SECRET_SIZE - secret_posn : iov->iov_size;
 
-    printf("Bytes = %d, strlen hello = %d, position.lo = %d, iov_size = %d, secret_posn = %d\n", bytes, strlen(SECRET_MESSAGE), position.lo, iov->iov_size, secret_posn);
-
-    debug_printf("1\n");
 
     if (bytes <= 0)
     {
-             printf("bad 2\n");
         return OK;
     }
     switch (opcode)
     {
         case DEV_GATHER_S:
-             debug_printf("3\n");
              ret = do_read(proc_nr, iov, bytes);
             break;
         case DEV_SCATTER_S:
-             debug_printf("4\n");
             ret = do_write(proc_nr, iov, bytes);
             break;
         default:
-             debug_printf("5\n");
             return EINVAL;
     }
 
-             debug_printf("6\n");
     return ret;
 }
 
 PRIVATE void secret_geometry(entry)
     struct partition *entry;
 {
-    printf("secret_geometry()\n");
     entry->cylinders = 0;
     entry->heads     = 0;
     entry->sectors   = 0;
@@ -336,7 +320,7 @@ PRIVATE int lu_state_restore() {
     ds_retrieve_u32("secret_posn", &value);
     ds_delete_u32("secret_posn");
     secret_posn = (int) value;
-    
+
     ds_retrieve_u32("device_state", &value);
     ds_delete_u32("device_state");
     device_state = (int) value;
@@ -382,7 +366,6 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
             num_reading_secret = 0;
             secret_posn = 0;
             device_state = DEVICE_STATE_EMPTY;  
-            printf("STARTIN UP BUTTERCUP %s", SECRET_MESSAGE);
         break;
 
         case SEF_INIT_LU:
