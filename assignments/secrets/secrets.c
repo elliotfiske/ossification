@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <minix/ds.h>
+#include <minix/const.h>
 #include "secrets.h"
 
 /*
@@ -70,7 +71,21 @@ PRIVATE int hello_open(d, m)
     struct driver *d;
     message *m;
 {
-    printf("hello_open(). Called %d time(s).\n", ++open_counter);
+    if ((m->COUNT & R_BIT) && (m->COUNT & W_BIT)) {
+        return EACCES;
+    }
+
+    if (m->m_type == DEV_WRITE_S) {
+        printf("Yay! We're writing now!\n");
+        printf("WRITE\nWRITE\nWRITE\nWRITE\n");
+    }
+
+    if (m->m_type == DEV_SCATTER_S) {
+        printf("Yay! We're SCATTER now!\n");
+        printf("SCATTER\nSCATTER\nSCATTER\nSCATTER\n");
+    }
+
+    printf("hello_open(). Called %d time(s). m_type: %d m_COUNT: %x\n", ++open_counter, m->m_type, m->COUNT);
     return OK;
 }
 
@@ -106,9 +121,9 @@ PRIVATE int do_read(proc_nr, iov, bytes)
 {
     int ret;
 
-    /*if (device_state != DEVICE_STATE_FULL) {
-        return ENOSPC;
-    }*/
+    if (device_state != DEVICE_STATE_FULL) {
+        return EACCES;
+    }
 
     ret = sys_safecopyto(proc_nr, iov->iov_addr, 0,
                       (vir_bytes) (secret + secret_posn),
@@ -126,12 +141,19 @@ PRIVATE int do_write(proc_nr, iov, bytes)
 {
     int ret;
 
+    if (device_state != DEVICE_STATE_EMPTY) {
+        printf("Too bad! I'm full.\n");
+        return EACCES;
+    }
+
     /* Prevent user from writing past end of buffer */
     ret = sys_safecopyfrom(proc_nr, iov->iov_addr, 0, 
                           (vir_bytes) (secret),
                           iov->iov_size, D);
     iov->iov_size -= bytes;
     secret_posn = 0;
+
+    device_state = DEVICE_STATE_BEING_WRITTEN;
 
     return ret;
 }
@@ -165,13 +187,9 @@ PRIVATE int hello_transfer(proc_nr, opcode, position, iov, nr_req)
             break;
         case DEV_SCATTER_S:
              debug_printf("4\n");
-            
-                ret = do_write(proc_nr, iov, bytes);
+            ret = do_write(proc_nr, iov, bytes);
             break;
-
-
         default:
-
              debug_printf("5\n");
             return EINVAL;
     }
@@ -238,7 +256,8 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
     open_counter = 0;
     switch(type) {
         case SEF_INIT_FRESH:
-            printf("%s", HELLO_MESSAGE);
+            device_state = DEVICE_STATE_EMPTY;  
+            printf("STARTIN UP BUTTERCUP %s", HELLO_MESSAGE);
         break;
 
         case SEF_INIT_LU:
@@ -250,6 +269,7 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
         break;
 
         case SEF_INIT_RESTART:
+            device_state = DEVICE_STATE_EMPTY;  
             printf("%sHey, I've just been restarted!\n", HELLO_MESSAGE);
         break;
     }
