@@ -2,7 +2,7 @@
 #define __HELLO_H
 
 /** The Hello, World! message. */
-#define HELLO_MESSAGE "SECRET SECRET SECRET\n"
+#define SECRET_MESSAGE "SECRET SECRET SECRET\n"
 #define SECRET_SIZE   8192
 
 #define DEVICE_STATE_FULL 1
