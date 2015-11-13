@@ -5,10 +5,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-char *msg = "Hello, secret keeper!";
+char *msg = "Hello, secret keeper! Changing owner now!\n";
 
 int main(int argc, char *argv[]) {
-	int fd = open("/dev/Secret", O_RDONLY);
+	int fd = open("/dev/Secret", O_WRONLY);
 	int res, uid;
 
 	if (fd == -1) {
@@ -16,9 +16,9 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 
-	 /*printf("Opening... fd=%d\n",fd);
+	printf("Opening... fd=%d\n",fd);
 	res = write(fd, msg, strlen(msg));
-	 printf("Writing... res=%d\n",res); */ 
+	printf("Writing... res=%d\n",res);
 
 	/* try grant */
 	if ( argc > 1 && 0 != (uid = atoi(argv[1]))) {

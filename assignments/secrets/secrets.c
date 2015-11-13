@@ -87,29 +87,28 @@ PRIVATE int secret_open(d, m)
         return EACCES;
     }
 
+    printf("1   device state is %d\n", device_state);
+
     if ((m->COUNT & R_BIT) && (m->COUNT & W_BIT)) {
         /* Read-Write access not allowed!  What's the point
          *  of telling a secret to yourself?? */
         return EACCES;
     }
 
-    printf("State: %d\n", device_state);
-
     if (m->COUNT & R_BIT) {
-        printf("1\n");
         if (device_state == DEVICE_STATE_EMPTY) {
             /* No secrets here! Try again later. */
+    printf("2\n");
             return OK;
         } else if (device_state == DEVICE_STATE_BEING_WRITTEN) {
-            printf("2\n");
             /* Somebody's writing a secret now.  Don't interrupt them,
              *  that would be RUDE. */
             return EACCES;
         }
         else if (device_state == DEVICE_STATE_FULL) {
-            printf("Trying to read device. I am %d and owner is %d\n", opening_user.uid, owner);
             if (opening_user.uid == owner) {
-                open_counter++;
+                num_reading_secret++;
+                printf("Somebody new reading. num reading: %d\n", num_reading_secret);
                 return OK;
             }
             else {
@@ -119,9 +118,11 @@ PRIVATE int secret_open(d, m)
         }
     }
     else if (m->COUNT & W_BIT) {
-        printf("3\n");
+        if (opening_user.uid != owner && device_state != DEVICE_STATE_EMPTY) {
+            return EACCES;
+        }
+
         if (device_state != DEVICE_STATE_EMPTY) {
-            printf("4\n");
             /** You can't write right now.  Wait 'till it's empty boss. */
             return ENOSPC;
         }
@@ -129,7 +130,7 @@ PRIVATE int secret_open(d, m)
         owner = opening_user.uid;
     }
 
-    printf("5\n");
+    printf("3\n");
 
     return OK;
 }
@@ -142,17 +143,21 @@ PRIVATE int secret_close(d, m)
      *   close, we know it's safe to say we're full. */
     if (device_state == DEVICE_STATE_BEING_WRITTEN) {
         device_state = DEVICE_STATE_FULL;
+        printf("I'm now tasty full mmm\n");
     }
     else if (device_state == DEVICE_STATE_FULL) {
         /**
          * We're currently being read by some processes, and one closed.
          *  If there's nobody left reading us, it's safe to close and destroy the secret.
          */
-         open_counter--;
-         if (open_counter == 0) {
+         num_reading_secret--;
+         printf("Closed, and %d person still reading\n", num_reading_secret);
+         if (num_reading_secret == 0) {
+            printf("Sucessfully reset\n");
             /* Wipe secret */
             memset(secret, 0, SECRET_SIZE);
             secret_size = 0;
+            secret_posn = 0;
             device_state = DEVICE_STATE_EMPTY;
          }
     }
@@ -227,10 +232,6 @@ PRIVATE int do_write(proc_nr, iov, bytes)
 {
     int ret;
 
-    if (device_state != DEVICE_STATE_EMPTY) {
-        return EACCES;
-    }
-
     /* Prevent user from writing past end of buffer */
     ret = sys_safecopyfrom(proc_nr, iov->iov_addr, 0, 
                           (vir_bytes) (secret),
@@ -239,6 +240,9 @@ PRIVATE int do_write(proc_nr, iov, bytes)
     secret_posn = 0;
 
     device_state = DEVICE_STATE_BEING_WRITTEN;
+    printf("Just set device state to written\n");
+
+    num_reading_secret = 0;
 
     secret_size = iov->iov_size;
 
@@ -257,9 +261,9 @@ PRIVATE int secret_transfer(proc_nr, opcode, position, iov, nr_req)
     bytes = SECRET_SIZE - secret_posn < iov->iov_size ?
              SECRET_SIZE - secret_posn : iov->iov_size;
 
-
     if (bytes <= 0)
     {
+        printf("humm\n");
         return OK;
     }
     switch (opcode)
@@ -268,6 +272,7 @@ PRIVATE int secret_transfer(proc_nr, opcode, position, iov, nr_req)
              ret = do_read(proc_nr, iov, bytes);
             break;
         case DEV_SCATTER_S:
+            printf("Here\n");
             ret = do_write(proc_nr, iov, bytes);
             break;
         default:
@@ -323,6 +328,7 @@ PRIVATE int lu_state_restore() {
 
     ds_retrieve_u32("device_state", &value);
     ds_delete_u32("device_state");
+    printf("RESTORING STATE for some reason...\n");
     device_state = (int) value;
 
     return OK;
@@ -365,6 +371,7 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
             secret_size = 0;
             num_reading_secret = 0;
             secret_posn = 0;
+            printf("Init fresh...\n");
             device_state = DEVICE_STATE_EMPTY;  
         break;
 
@@ -376,6 +383,7 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
         break;
 
         case SEF_INIT_RESTART:
+            printf("REstart...\n");
             device_state = DEVICE_STATE_EMPTY;  
             printf("%sHey, I've just been restarted!\n", SECRET_MESSAGE);
         break;
