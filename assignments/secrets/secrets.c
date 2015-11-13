@@ -54,8 +54,6 @@ PRIVATE struct device hello_device;
 PRIVATE char secret[SECRET_SIZE];
 
 /********************** DEVICE STATE *****************************/
-/** State variable to count the number of times the device has been opened. */
-PRIVATE int open_counter;
 /** How big a secret are we holding onto? */
 PRIVATE int secret_size;
 /** Owner's name TODO: wut */
@@ -74,6 +72,60 @@ PRIVATE char * secret_name(void)
     return "secret";
 }
 
+/**
+ * User is trying to OPEN the secret, with the R_BIT set.
+ *  Only let them do it if there's actually a secret to
+ *  read, and if they're the owner of the secret.
+ */
+PRIVATE int open_for_reading(opening_user) 
+    struct ucred opening_user;
+{
+    if (device_state == DEVICE_STATE_EMPTY) {
+        /* No secrets here! Try again later. */
+        return OK;
+    } else if (device_state == DEVICE_STATE_BEING_WRITTEN) {
+        /* Somebody's writing a secret now.  Don't interrupt them,
+         *  that would be RUDE. */
+        return EACCES;
+    }
+    else if (device_state == DEVICE_STATE_FULL) {
+        if (opening_user.uid == owner) {
+            num_reading_secret++;
+            return OK;
+        }
+        else {
+            /* That's not your secret! */
+            return EACCES;
+        }
+    }
+}
+
+/**
+ * User is trying to OPEN the secret, with the W_BIT set.
+ */
+PRIVATE int open_for_writing(opening_user) 
+    struct ucred opening_user;
+{
+    if (opening_user.uid != owner && device_state != DEVICE_STATE_EMPTY) {
+        return EACCES;
+    }
+
+    if (device_state != DEVICE_STATE_EMPTY) {
+        /** You can't write right now.  Wait 'till it's empty boss. */
+        return ENOSPC;
+    }
+
+    /** Success!  You're now the new owner. */
+    owner = opening_user.uid;
+    return OK;
+}
+
+/**
+ * Callback from SEF when somebody tries to open() our
+ *  device file. Check who's trying to open it, and respond
+ *  appropriately based on if they're trying to READ or
+ *  WRITE.
+ */
 PRIVATE int secret_open(d, m)
     struct driver *d;
     message *m;
@@ -94,36 +146,10 @@ PRIVATE int secret_open(d, m)
     }
 
     if (m->COUNT & R_BIT) {
-        if (device_state == DEVICE_STATE_EMPTY) {
-            /* No secrets here! Try again later. */
-            return OK;
-        } else if (device_state == DEVICE_STATE_BEING_WRITTEN) {
-            /* Somebody's writing a secret now.  Don't interrupt them,
-             *  that would be RUDE. */
-            return EACCES;
-        }
-        else if (device_state == DEVICE_STATE_FULL) {
-            if (opening_user.uid == owner) {
-                num_reading_secret++;
-                return OK;
-            }
-            else {
-                /* That's not your secret! */
-                return EACCES;
-            }
-        }
+        return open_for_reading(opening_user);
     }
     else if (m->COUNT & W_BIT) {
-        if (opening_user.uid != owner && device_state != DEVICE_STATE_EMPTY) {
-            return EACCES;
-        }
-
-        if (device_state != DEVICE_STATE_EMPTY) {
-            /** You can't write right now.  Wait 'till it's empty boss. */
-            return ENOSPC;
-        }
-
-        owner = opening_user.uid;
+        return open_for_writing(opening_user);
     }
 
     return OK;
@@ -203,6 +229,11 @@ PRIVATE int do_read(proc_nr, iov, bytes)
 {
     int ret;
 
+    if (bytes - secret_posn > secret_size) {
+        /** You can't read past the end!  You dirty hacker. */
+        return EACCES;
+    }
+
     if (device_state != DEVICE_STATE_FULL) {
         return OK;
     }
@@ -223,7 +254,6 @@ PRIVATE int do_write(proc_nr, iov, bytes)
 {
     int ret;
 
-    /* Prevent user from writing past end of buffer */
     ret = sys_safecopyfrom(proc_nr, iov->iov_addr, 0, 
                           (vir_bytes) (secret),
                           iov->iov_size, D);
@@ -248,6 +278,11 @@ PRIVATE int secret_transfer(proc_nr, opcode, position, iov, nr_req)
     unsigned nr_req;
 {
     int bytes, ret;
+
+    if (iov->iov_size > SECRET_SIZE) {
+        /* You can't read or write past the end of the buffer! */
+        return ENOSPC;
+    }
 
     if (secret_size == 0) {
         bytes = SECRET_SIZE - secret_posn < iov->iov_size ?
@@ -287,7 +322,6 @@ PRIVATE void secret_geometry(entry)
 
 PRIVATE int sef_cb_lu_state_save(int state) {
     /* Save the state. */
-    ds_publish_u32("open_counter", open_counter, DSF_OVERWRITE);
     ds_publish_u32("secret_size", secret_size, DSF_OVERWRITE);
     ds_publish_u32("owner", owner, DSF_OVERWRITE);
     ds_publish_u32("num_reading_secret", num_reading_secret, DSF_OVERWRITE);
@@ -301,9 +335,6 @@ PRIVATE int lu_state_restore() {
 /* Restore the state. */
     u32_t value;
 
-    ds_retrieve_u32("open_counter", &value);
-    ds_delete_u32("open_counter");
-    open_counter = (int) value;
 
     ds_retrieve_u32("secret_size", &value);
     ds_delete_u32("secret_size");
@@ -357,12 +388,10 @@ PRIVATE int sef_cb_init(int type, sef_init_info_t *info)
 /* Initialize the secret driver. */
     int do_announce_driver = TRUE;
 
-    open_counter = 0;
     switch(type) {
         case SEF_INIT_FRESH:
             /* INITIAL STARTUP STATE */
             do_announce_driver = FALSE;
-            open_counter = 0;
             secret_size = 0;
             num_reading_secret = 0;
             secret_posn = 0;
