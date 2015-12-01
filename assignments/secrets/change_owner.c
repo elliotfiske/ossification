@@ -1,3 +1,7 @@
+/****
+ * This is a program that demonstrates the use of an ioctl() call
+ *  using the example code shown in the handout.
+ */
 #include <stdio.h>
 #include <sys/stat.h> 
 #include <fcntl.h>
