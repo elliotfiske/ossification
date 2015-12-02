@@ -35,6 +35,8 @@
 #define OTHER_EXECUTE_PERMISSION 0000001
 
 #define DIRECT_ZONES 7
+#define MAX_DIRECTORY_ENTRIES 512
+#define PERMISSIONS_STRING_SIZE 100
 
 int offset;
 int bitmapSize;
@@ -159,7 +161,10 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
    /* 1 boot block, 1 super block, 
       X inode bitmap blocks, X zone bitmap blocks */
    int numPaddingBlocks = 1 + 1 + inodeBitmapBlocks + zoneBitmapBlocks;
-   uint32_t offsetToInodes = numPaddingBlocks * blockSize;
+   
+   inode -= 1; /* inodes start at 1 so yeah */
+   
+   uint32_t offsetToInodes = numPaddingBlocks * blockSize + inode * sizeof(struct inode);
   
    fseek(imageFile, offsetToInodes, SEEK_SET);
  
@@ -169,22 +174,75 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
       printInode(node);
    }
    else {
-      printf("Read failed\n");
+      printf("iNode read failed\n");
    }
  
    return node;
 }
 
 /* Finds the actual file given the root inode */
-void findActualFile(struct inode *node, FILE *imageFile, struct superblock *block, char *path,
- char vFlag) {
+void findActualFile(struct inode *node, FILE *imageFile, struct superblock *block, char
+ *path, char vFlag) {
    uint32_t fileSize = node->size; /* File size in bytes */
+   uint32_t totalRead = 0;
+   uint32_t totalConverted = 0;
+   size_t readBytes = 0;
+   uint32_t maxFileSize = block->max_file;
+   int i = 0;
+   void *directory = calloc(1, maxFileSize);
+   struct directory_entry *entries = calloc(MAX_DIRECTORY_ENTRIES,
+    DIRECTORY_ENTRY_SIZE_BYTES);
+   void *curPtr = directory;
+   uint32_t zoneSize = block->blocksize << block->log_zone_size;
    
+   /* Reset pointer to start of file */
+   fseek(imageFile, 0, SEEK_SET);
    
+   /* Read through all the direct zones */
+   while (totalRead <= node->size && i < 7) {
+      fseek(imageFile, node->zone[i] * zoneSize, SEEK_SET);
+      readBytes = fread(curPtr, zoneSize, 1, imageFile);
+      
+      if (readBytes == 1) {
+         curPtr += zoneSize;
+         totalRead += zoneSize;
+         i++;
+      }
+      else {
+         printf("Read zones failed\n");
+         break;
+      }
+   }
+   
+   i = 0;
+   /* Treat directory as many directory_entrys */
+   while (totalConverted < fileSize) {
+      memcpy(&entries[i], directory, sizeof(struct directory_entry));
+      directory += DIRECTORY_ENTRY_SIZE_BYTES;
+      totalConverted += DIRECTORY_ENTRY_SIZE_BYTES;
+      
+      printf("Directory inode: %d\n", entries[i].inode);
+      printf("Directory name: %s\n", entries[i].name);
+      
+      i++;
+   }
+   
+   /* Free directory_entrys */
+   free(entries);
 }
 
 /* Prints the LS information */
-void printInfo() {
+void printInfo(FILE *imageFile, struct directory_entry *array, int numOfDirectories) {
+   int i;
+   char *permissionString = calloc(1, PERMISSIONS_STRING_SIZE);
+   strcpy(permissionString, "---------");
+   
+   for (i = 0; i < numOfDirectories; i++) {
+      
+   }
+}
+
+void modifyPermissionString(char *permissionString, int mode) {
 
 }
 
