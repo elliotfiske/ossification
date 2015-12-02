@@ -224,15 +224,18 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
       printf("Directory inode: %d\n", entries[i].inode);
       printf("Directory name: %s\n", entries[i].name);
       
+      
       i++;
    }
+   
+   printDirectory(imageFile, entries, i);
    
    /* Free directory_entrys */
    free(entries);
 }
 
-/* Prints the LS information */
-void printInfo(FILE *imageFile, struct directory_entry *array, int numOfDirectories) {
+/* Prints the LS information for one file */
+void printDirectory(FILE *imageFile, struct directory_entry *array, int numOfDirectories) {
    int i;
    char *permissionString = calloc(1, PERMISSIONS_STRING_SIZE);
    strcpy(permissionString, "---------");
@@ -240,6 +243,12 @@ void printInfo(FILE *imageFile, struct directory_entry *array, int numOfDirector
    for (i = 0; i < numOfDirectories; i++) {
       
    }
+}
+
+/** Given a directory entry, print the permission string like
+    "drw-rwx-w-" or whatever. */
+void printPermissionString(struct directory_entry entry) {
+   char dir = entry.inode
 }
 
 void modifyPermissionString(char *permissionString, int mode) {
