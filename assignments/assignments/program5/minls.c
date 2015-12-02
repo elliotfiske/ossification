@@ -38,6 +38,7 @@
 
 int offset;
 int bitmapSize;
+int zoneSize;
 
 struct superblock { /* Minix Version 3 Superblock
    * this structure found in fs/super.h
@@ -131,10 +132,10 @@ FILE *initialize(struct superblock *block, int partition, int subpartition, int 
       
       /* Error checking */
       if (readBytes == 1) {
-         
+         printSuperblock(block);
       }
       else {
-      
+         printf("Failed to read disk image properly\n");
       }
    }
    return diskImage;
@@ -153,7 +154,8 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
 /* Finds the actual file given the root inode */
 void findActualFile(struct inode *node, FILE *imageFile, struct superblock *block, char *path,
  char vFlag) {
-   uint32_t fileSize = node->size;
+   uint32_t fileSize = node->size; /* File size in bytes */
+   
    
    
 }
@@ -164,10 +166,20 @@ void printInfo() {
 }
 
 
-
 /* Prints the superblock contents */
 void printSuperblock(struct superblock *block) {
-
+   printf("Superblock Contents\n");
+   printf("Stored Fields:\n");
+   printf("ninodes %d\n", block->ninodes);
+   printf("i_blocks %d\n", block->i_blocks);
+   printf("z_blocks %d\n", block->z_blocks);
+   printf("firstdata %d\n", block->firstdata);
+   printf("log_zone_size %d\n", block->log_zone_size);
+   printf("max_file %d\n", block->max_file);
+   printf("magic %d\n", block->magic);
+   printf("zones %d\n", block->zones);
+   printf("blocksize %d\n", block->blocksize);
+   printf("subversion %d\n", block->subversion);
 }
 
 /* Prints the inode contents */
