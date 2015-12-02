@@ -91,11 +91,13 @@ struct partition_entry {
    uint32_t size;
 };
 
-
 struct directory_entry {
    uint32_t inode;
    unsigned char name[60];
 };
+
+void printSuperblock(struct superblock *block);
+void printInode(struct inode *node);
 
 /* Initializes the superblock, and partition table entry if specified */
 FILE *initialize(struct superblock *block, int partition, int subpartition,
@@ -145,13 +147,29 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
 }
 
 /* Given an inode number, find the actual inode */
-struct inode* findInodeFile(FILE *imageFile, int inode,
-                            struct superblock *block, char vFlag) {
- struct inode* node = calloc(1, sizeof(struct inode));
+struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block,
+ char vFlag) {
+   struct inode* node = calloc(1, sizeof(struct inode));
+   uint32_t numberOfInodes = block->ninodes;
+   uint16_t inodeBitmapBlocks = block->i_blocks;
+   uint16_t zoneBitmapBlocks = block->z_blocks;
+   uint16_t blockSize = block->blocksize;
+   size_t readBytes = 0;
+   
+   uint32_t totalMapSize = inodeBitmapBlocks * blockSize + zoneBitmapBlocks * blockSize;
+   
+   fseek(imageFile, totalMapSize, SEEK_CUR);
  
+   readBytes = fread(node, sizeof(struct inode), 1, imageFile);
+   
+   if (readBytes == 1) {
+      printInode(node);
+   }
+   else {
+      printf("Read failed\n");
+   }
  
- 
- return node;
+   return node;
 }
 
 /* Finds the actual file given the root inode */
@@ -186,7 +204,19 @@ void printSuperblock(struct superblock *block) {
 
 /* Prints the inode contents */
 void printInode(struct inode *node) {
-
+   printf("File inode:\n");
+   printf("uint16_t mode %d\n", node->mode);
+   printf("uint16_t links %d\n", node->links);
+   printf("uint16_t uid %d\n", node->uid);
+   printf("uint16_t gid %d\n", node->gid);
+   printf("uint32_t size %d\n", node->size);
+   printf("int32_t atime %d\n", node->atime);
+   printf("int32_t mtime %d\n", node->mtime);
+   printf("int32_t ctime %d\n", node->ctime);
+   printf("Direct zones: IDK\n");
+   printf("uint32_t indirect %d\n", node->indirect);
+   printf("uint32_t two_indirect %d\n", node->two_indirect);
+   printf("uint32_t unused %d\n", node->unused);
 }
 
 /* Prints the partition table */
