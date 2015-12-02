@@ -100,6 +100,7 @@ struct directory_entry {
 
 void printSuperblock(struct superblock *block);
 void printInode(struct inode *node);
+void printPermissionString(uint16_t fileMode);
 
 /* Initializes the superblock, and partition table entry if specified */
 FILE *initialize(struct superblock *block, int partition, int subpartition,
@@ -224,52 +225,49 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
       printf("Directory inode: %d\n", entries[i].inode);
       printf("Directory name: %s\n", entries[i].name);
       
-      
       i++;
    }
-   
-   printDirectory(imageFile, entries, i);
    
    /* Free directory_entrys */
    free(entries);
 }
 
-/* Modifies the permission string */
-void modifyPermissionString(char *permissionString, struct inode *node) {
-   int i = 0;
-   
-   while (i < 9) {
-      switch (i) {
-         case 0:
-         
-         break;
-
-         default:
-         break;
-      }
-   }
-}
-
-
-/* Prints the LS information */
-void printInfo(FILE *imageFile, struct directory_entry *entry, int numOfDirectories,
+/* Prints the LS information for a directory */
+void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDirectories,
  struct superblock *block) {
    int i;
-   char *permissionString = calloc(1, PERMISSIONS_STRING_SIZE);
    struct inode *node;
-   strcpy(permissionString, "---------");
    
    for (i = 0; i < numOfDirectories; i++) {
       node = findInodeFile(imageFile, entry->inode, block, 0);
       
-      modifyPermissionString(permissionString, node);
+      
+      printPermissionString(node->mode);
    }
 }
 
 /** Given a directory entry, print the permission string like
     "drw-rwx-w-" or whatever. */
-void printPermissionString(struct directory_entry entry) {
-   char dir = entry.inode
+void printPermissionString(uint16_t fileMode) {
+   char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
+   
+   char owner_read  = ((fileMode & OWNER_READ_PERMISSION))       ? 'r' : '-';
+   char owner_write = ((fileMode & OWNER_WRITE_PERMISSION))      ? 'w' : '-';
+   char owner_exec  = ((fileMode & OWNER_EXECUTE_PERMISSION))    ? 'x' : '-';
+   
+   char group_read =  ((fileMode & GROUP_READ_PERMISSION))       ? 'r' : '-';
+   char group_write = ((fileMode & GROUP_WRITE_PERMISSION))      ? 'w' : '-';
+   char group_exec  = ((fileMode & GROUP_EXECUTE_PERMISSION))    ? 'x' : '-';
+   
+   char other_read =  ((fileMode & OTHER_READ_PERMISSION))       ? 'r' : '-';
+   char other_write = ((fileMode & OTHER_WRITE_PERMISSION))      ? 'w' : '-';
+   char other_exec  = ((fileMode & OTHER_EXECUTE_PERMISSION))    ? 'x' : '-';
+   
+   printf("%c%c%c%c%c%c%c%c%c%c",
+          dir,
+          owner_read, owner_write, owner_exec,
+          group_read, group_write, group_exec,
+          other_read, other_write, other_exec  );
 }
 
 /* Prints the superblock contents */
