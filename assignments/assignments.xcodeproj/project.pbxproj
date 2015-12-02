@@ -86,6 +86,7 @@
 		C97F0C381C0D820500915E64 /* program5 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program5; sourceTree = BUILT_PRODUCTS_DIR; };
 		C97F0C3A1C0D820500915E64 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		C97F0C401C0D821300915E64 /* minls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = minls.c; sourceTree = "<group>"; };
+		C97F0C431C0D830B00915E64 /* minls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = minls.h; sourceTree = "<group>"; };
 		C9BA5B4D1BE159B400A761FC /* program3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program3; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9BA5B4F1BE159B400A761FC /* dining.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dining.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -200,6 +201,7 @@
 		C97F0C3F1C0D821300915E64 /* program5 */ = {
 			isa = PBXGroup;
 			children = (
+				C97F0C431C0D830B00915E64 /* minls.h */,
 				C97F0C421C0D823000915E64 /* testFilesystems */,
 				C97F0C401C0D821300915E64 /* minls.c */,
 			);
