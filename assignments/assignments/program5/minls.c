@@ -94,11 +94,10 @@ struct directory_entry {
 };
 
 /* Initializes the superblock, and partition table entry if specified */
-struct superblock *initialize(int partition, int subpartition, int pFlag,
- int spFlag, char *imageName, char *path, char vFlag) {
+FILE *initialize(struct superblock *block, int partition, int subpartition, int pFlag,
+ int spFlag, char *imageName, char vFlag) {
    struct partition_entry mainPartition;
    struct partition_entry subPartition;
-   struct superblock *block;
    uint32_t firstSector;
    FILE *diskImage = fopen(imageName, "r+");
    size_t readBytes = 0;
@@ -138,13 +137,24 @@ struct superblock *initialize(int partition, int subpartition, int pFlag,
       
       }
    }
-
-   return block;
+   return diskImage;
 }
 
 /* Given an inode number, find the actual inode */
-struct inode findInodeFile(FILE *image, int inode, struct superblock *block,
- char *path, char vFlag) {
+struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block,
+ char vFlag) {
+ struct inode* node = calloc(1, sizeof(struct inode));
+ 
+ 
+ 
+ return node;
+}
+
+/* Finds the actual file given the root inode */
+void findActualFile(struct inode *node, FILE *imageFile, struct superblock *block, char *path,
+ char vFlag) {
+   uint32_t fileSize = node->size;
+   
    
 }
 
@@ -189,7 +199,9 @@ int main(int argc, char **argv) {
    char *imageName, *path;
    int partition, subpartition;
    int i;
-   struct superblock* block;
+   struct superblock block;
+   struct inode* currentInode;
+   FILE *imageFile;
    
    printf("Size of superblock: %lu\n", sizeof(struct superblock));
    printf("Size of inode: %lu\n", sizeof(struct inode));
@@ -238,12 +250,14 @@ int main(int argc, char **argv) {
       }
    }
    
-   block = initialize(partition, subPartition, pFlag, spFlag,
-    imageName, path, vFlag);
+   /* Initialize the superblock */
+   imageFile = initialize(&block, partition, subpartition, pFlag, spFlag,
+    imageName, vFlag);
    
    /* Get the first inode */
-      
-   /* Iterate through inode and compare paths - lots of shit to do here for sure */
+   currentInode = findInodeFile(imageFile, 1, &block, vFlag);
    
+   /* Iterate through inode and compare paths - lots of shit to do here for sure */
+   findActualFile(currentInode, imageFile, &block, path, vFlag);
 
 }
