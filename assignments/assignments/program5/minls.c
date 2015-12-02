@@ -155,10 +155,13 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
    uint16_t zoneBitmapBlocks = block->z_blocks;
    uint16_t blockSize = block->blocksize;
    size_t readBytes = 0;
-   
-   uint32_t totalMapSize = inodeBitmapBlocks * blockSize + zoneBitmapBlocks * blockSize;
-   
-   fseek(imageFile, totalMapSize, SEEK_CUR);
+  
+   /* 1 boot block, 1 super block, 
+      X inode bitmap blocks, X zone bitmap blocks */
+   int numPaddingBlocks = 1 + 1 + inodeBitmapBlocks + zoneBitmapBlocks;
+   uint32_t offsetToInodes = numPaddingBlocks * blockSize;
+  
+   fseek(imageFile, offsetToInodes, SEEK_SET);
  
    readBytes = fread(node, sizeof(struct inode), 1, imageFile);
    
@@ -205,7 +208,7 @@ void printSuperblock(struct superblock *block) {
 /* Prints the inode contents */
 void printInode(struct inode *node) {
    printf("File inode:\n");
-   printf("uint16_t mode %d\n", node->mode);
+   printf("uint16_t mode 0x%x\n", node->mode);
    printf("uint16_t links %d\n", node->links);
    printf("uint16_t uid %d\n", node->uid);
    printf("uint16_t gid %d\n", node->gid);
