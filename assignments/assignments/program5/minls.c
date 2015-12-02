@@ -98,7 +98,6 @@ FILE *initialize(struct superblock *block, int partition, int subpartition, int 
  int spFlag, char *imageName, char vFlag) {
    struct partition_entry mainPartition;
    struct partition_entry subPartition;
-   struct superblock *block = calloc(1, sizeof(struct superblock));
    uint32_t firstSector;
    FILE *diskImage = fopen(imageName, "r+");
    size_t readBytes = 0;
@@ -259,6 +258,6 @@ int main(int argc, char **argv) {
    currentInode = findInodeFile(imageFile, 1, &block, vFlag);
    
    /* Iterate through inode and compare paths - lots of shit to do here for sure */
-   findActualFile(currentInode, imageFile, block, path, vFlag);
+   findActualFile(currentInode, imageFile, &block, path, vFlag);
 
 }
