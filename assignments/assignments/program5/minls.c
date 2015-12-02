@@ -57,7 +57,7 @@ struct superblock { /* Minix Version 3 Superblock
    int16_t pad3; /* make things line up again */
    uint16_t blocksize; /* block size in bytes */
    uint8_t subversion; /* filesystem sub–version */
-};
+} __attribute__ ((__packed__));
 
 struct inode {
    uint16_t mode; /* mode */
@@ -94,8 +94,8 @@ struct directory_entry {
 };
 
 /* Initializes the superblock, and partition table entry if specified */
-FILE *initialize(struct superblock *block, int partition, int subpartition, int pFlag,
- int spFlag, char *imageName, char vFlag) {
+FILE *initialize(struct superblock *block, int partition, int subpartition,
+                 int pFlag, int spFlag, char *imageName, char vFlag) {
    struct partition_entry mainPartition;
    struct partition_entry subPartition;
    uint32_t firstSector;
@@ -141,8 +141,8 @@ FILE *initialize(struct superblock *block, int partition, int subpartition, int 
 }
 
 /* Given an inode number, find the actual inode */
-struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block,
- char vFlag) {
+struct inode* findInodeFile(FILE *imageFile, int inode,
+                            struct superblock *block, char vFlag) {
  struct inode* node = calloc(1, sizeof(struct inode));
  
  
@@ -151,8 +151,8 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
 }
 
 /* Finds the actual file given the root inode */
-void findActualFile(struct inode *node, FILE *imageFile, struct superblock *block, char *path,
- char vFlag) {
+void findActualFile(struct inode *node, FILE *imageFile,
+                    struct superblock *block, char *path, char vFlag) {
    uint32_t fileSize = node->size;
    
    
@@ -185,10 +185,10 @@ void printPartitionTable(struct partition_entry *entry) {
 void print_correct_usage() {
    printf("usage: minls [ -v ] [ -p num [ -s num ] ] imagefile [ path ]\n");
    printf("Options:\n");
-   printf("-p part --- select partition for filesystem (default: none)\n");
-   printf("-s sub --- select subpartition for filesystem (default: none)\n");
-   printf("-h help --- print usage information and exit\n");
-   printf("-v verbose --- increase verbosity level)\n");
+   printf("\t-p part --- select partition for filesystem (default: none)\n");
+   printf("\t-s sub --- select subpartition for filesystem (default: none)\n");
+   printf("\t-h help --- print usage information and exit\n");
+   printf("\t-v verbose --- increase verbosity level)\n");
 }
 
 int main(int argc, char **argv) {
@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
          i++;
          partition = atoi(argv[i]);
          
-         printf("Partition: %d\n", subpartition);
+         printf("Partition: %d\n", partition);
          pFlag = 1;
       }
       else if (!strcmp(argv[i], "-s")){

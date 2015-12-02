@@ -14,7 +14,6 @@
 		C96B30671BB61DFE001C22BE /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = C96B30641BB61DFE001C22BE /* Makefile */; };
 		C96B307E1BB90B21001C22BE /* malloc.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30691BB61F7F001C22BE /* malloc.c */; };
 		C96B307F1BB90B24001C22BE /* testMalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = C96B30701BB622CD001C22BE /* testMalloc.c */; };
-		C97F0C3B1C0D820500915E64 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C97F0C3A1C0D820500915E64 /* main.c */; };
 		C97F0C411C0D821300915E64 /* minls.c in Sources */ = {isa = PBXBuildFile; fileRef = C97F0C401C0D821300915E64 /* minls.c */; };
 		C9BA5B501BE159B400A761FC /* dining.c in Sources */ = {isa = PBXBuildFile; fileRef = C9BA5B4F1BE159B400A761FC /* dining.c */; };
 /* End PBXBuildFile section */
@@ -84,11 +83,24 @@
 		C96B30701BB622CD001C22BE /* testMalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testMalloc.c; sourceTree = "<group>"; };
 		C96B30771BB90B05001C22BE /* program1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program1; sourceTree = BUILT_PRODUCTS_DIR; };
 		C97F0C381C0D820500915E64 /* program5 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program5; sourceTree = BUILT_PRODUCTS_DIR; };
-		C97F0C3A1C0D820500915E64 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		C97F0C401C0D821300915E64 /* minls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = minls.c; sourceTree = "<group>"; };
 		C97F0C431C0D830B00915E64 /* minls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = minls.h; sourceTree = "<group>"; };
 		C9BA5B4D1BE159B400A761FC /* program3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program3; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9BA5B4F1BE159B400A761FC /* dining.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dining.c; sourceTree = "<group>"; };
+		C9E09CB11C0EC054009E6363 /* BigDirectories */ = {isa = PBXFileReference; lastKnownFileType = file; name = BigDirectories; path = ../unix_side/files_given/images/BigDirectories; sourceTree = "<group>"; };
+		C9E09CB21C0EC054009E6363 /* BigIndirectDirs */ = {isa = PBXFileReference; lastKnownFileType = file; name = BigIndirectDirs; path = ../unix_side/files_given/images/BigIndirectDirs; sourceTree = "<group>"; };
+		C9E09CB31C0EC054009E6363 /* BigZones-16k */ = {isa = PBXFileReference; lastKnownFileType = file; name = "BigZones-16k"; path = "../unix_side/files_given/images/BigZones-16k"; sourceTree = "<group>"; };
+		C9E09CB41C0EC054009E6363 /* BlankDisk */ = {isa = PBXFileReference; lastKnownFileType = file; name = BlankDisk; path = ../unix_side/files_given/images/BlankDisk; sourceTree = "<group>"; };
+		C9E09CB51C0EC054009E6363 /* BrokenStuff */ = {isa = PBXFileReference; lastKnownFileType = file; name = BrokenStuff; path = ../unix_side/files_given/images/BrokenStuff; sourceTree = "<group>"; };
+		C9E09CB61C0EC054009E6363 /* Files */ = {isa = PBXFileReference; lastKnownFileType = file; name = Files; path = ../unix_side/files_given/images/Files; sourceTree = "<group>"; };
+		C9E09CB71C0EC054009E6363 /* HardDisk */ = {isa = PBXFileReference; lastKnownFileType = file; name = HardDisk; path = ../unix_side/files_given/images/HardDisk; sourceTree = "<group>"; };
+		C9E09CB81C0EC054009E6363 /* Notes */ = {isa = PBXFileReference; lastKnownFileType = text; name = Notes; path = ../unix_side/files_given/images/Notes; sourceTree = "<group>"; };
+		C9E09CB91C0EC054009E6363 /* Partitioned */ = {isa = PBXFileReference; lastKnownFileType = file; name = Partitioned; path = ../unix_side/files_given/images/Partitioned; sourceTree = "<group>"; };
+		C9E09CBA1C0EC054009E6363 /* RandomDisk */ = {isa = PBXFileReference; lastKnownFileType = file; name = RandomDisk; path = ../unix_side/files_given/images/RandomDisk; sourceTree = "<group>"; };
+		C9E09CBB1C0EC054009E6363 /* ReallyBigZones-64k */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ReallyBigZones-64k"; path = "../unix_side/files_given/images/ReallyBigZones-64k"; sourceTree = "<group>"; };
+		C9E09CBC1C0EC054009E6363 /* SmallBlocks--1k */ = {isa = PBXFileReference; lastKnownFileType = file; name = "SmallBlocks--1k"; path = "../unix_side/files_given/images/SmallBlocks--1k"; sourceTree = "<group>"; };
+		C9E09CBD1C0EC054009E6363 /* TestImage */ = {isa = PBXFileReference; lastKnownFileType = file; name = TestImage; path = ../unix_side/files_given/images/TestImage; sourceTree = "<group>"; };
+		C9E09CBE1C0EC054009E6363 /* WeirdStuff */ = {isa = PBXFileReference; lastKnownFileType = file; name = WeirdStuff; path = ../unix_side/files_given/images/WeirdStuff; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,13 +157,13 @@
 		C92A51AC1BB09296002BE266 = {
 			isa = PBXGroup;
 			children = (
+				C9E09CBF1C0EC061009E6363 /* given_images */,
 				C97F0C3F1C0D821300915E64 /* program5 */,
 				C9051FF81BCC7AF000CDA3C9 /* program2 */,
 				C96B306C1BB62120001C22BE /* sftp-config.json */,
 				C96B30681BB61E79001C22BE /* program1 */,
 				C96B30621BB61DFE001C22BE /* lab1 */,
 				C9BA5B4E1BE159B400A761FC /* program3 */,
-				C97F0C391C0D820500915E64 /* program5 */,
 				C92A51B61BB09296002BE266 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -190,14 +202,6 @@
 			path = assignments/program1;
 			sourceTree = "<group>";
 		};
-		C97F0C391C0D820500915E64 /* program5 */ = {
-			isa = PBXGroup;
-			children = (
-				C97F0C3A1C0D820500915E64 /* main.c */,
-			);
-			path = program5;
-			sourceTree = "<group>";
-		};
 		C97F0C3F1C0D821300915E64 /* program5 */ = {
 			isa = PBXGroup;
 			children = (
@@ -222,6 +226,27 @@
 				C9BA5B4F1BE159B400A761FC /* dining.c */,
 			);
 			path = program3;
+			sourceTree = "<group>";
+		};
+		C9E09CBF1C0EC061009E6363 /* given_images */ = {
+			isa = PBXGroup;
+			children = (
+				C9E09CB11C0EC054009E6363 /* BigDirectories */,
+				C9E09CB21C0EC054009E6363 /* BigIndirectDirs */,
+				C9E09CB31C0EC054009E6363 /* BigZones-16k */,
+				C9E09CB41C0EC054009E6363 /* BlankDisk */,
+				C9E09CB51C0EC054009E6363 /* BrokenStuff */,
+				C9E09CB61C0EC054009E6363 /* Files */,
+				C9E09CB71C0EC054009E6363 /* HardDisk */,
+				C9E09CB81C0EC054009E6363 /* Notes */,
+				C9E09CB91C0EC054009E6363 /* Partitioned */,
+				C9E09CBA1C0EC054009E6363 /* RandomDisk */,
+				C9E09CBB1C0EC054009E6363 /* ReallyBigZones-64k */,
+				C9E09CBC1C0EC054009E6363 /* SmallBlocks--1k */,
+				C9E09CBD1C0EC054009E6363 /* TestImage */,
+				C9E09CBE1C0EC054009E6363 /* WeirdStuff */,
+			);
+			name = given_images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -392,7 +417,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C97F0C3B1C0D820500915E64 /* main.c in Sources */,
 				C97F0C411C0D821300915E64 /* minls.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -617,6 +641,7 @@
 				C97F0C3D1C0D820500915E64 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C9BA5B531BE159B400A761FC /* Build configuration list for PBXNativeTarget "program3" */ = {
 			isa = XCConfigurationList;
