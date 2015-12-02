@@ -231,21 +231,37 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
    free(entries);
 }
 
-/* Prints the LS information */
-void printInfo(FILE *imageFile, struct directory_entry *array, int numOfDirectories) {
-   int i;
-   char *permissionString = calloc(1, PERMISSIONS_STRING_SIZE);
-   strcpy(permissionString, "---------");
+/* Modifies the permission string */
+void modifyPermissionString(char *permissionString, struct inode *node) {
+   int i = 0;
    
-   for (i = 0; i < numOfDirectories; i++) {
-      
+   while (i < 9) {
+      switch (i) {
+         case 0:
+         
+         break;
+
+         default:
+         break;
+      }
    }
 }
 
-void modifyPermissionString(char *permissionString, int mode) {
 
+/* Prints the LS information */
+void printInfo(FILE *imageFile, struct directory_entry *entry, int numOfDirectories,
+ struct superblock *block) {
+   int i;
+   char *permissionString = calloc(1, PERMISSIONS_STRING_SIZE);
+   struct inode *node;
+   strcpy(permissionString, "---------");
+   
+   for (i = 0; i < numOfDirectories; i++) {
+      node = findInodeFile(imageFile, entry->inode, block, 0);
+      
+      modifyPermissionString(permissionString, node);
+   }
 }
-
 
 /* Prints the superblock contents */
 void printSuperblock(struct superblock *block) {
