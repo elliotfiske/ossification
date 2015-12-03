@@ -41,6 +41,7 @@
 int offset;
 int bitmapSize;
 int zoneSize;
+char originalFileName[100];
 
 struct superblock { /* Minix Version 3 Superblock
    * this structure found in fs/super.h
@@ -101,6 +102,8 @@ struct directory_entry {
 void printSuperblock(struct superblock *block);
 void printInode(struct inode *node);
 void printPermissionString(uint16_t fileMode);
+void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDirectories,
+ struct superblock *block); // TODO: DELETE ^
 
 /* Initializes the superblock, and partition table entry if specified */
 FILE *initialize(struct superblock *block, int partition, int subpartition,
@@ -172,7 +175,10 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
    readBytes = fread(node, sizeof(struct inode), 1, imageFile);
    
    if (readBytes == 1) {
-      printInode(node);
+      if (vFlag == 1) {
+         printInode(node);
+      }
+      
    }
    else {
       printf("iNode read failed\n");
@@ -190,11 +196,14 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
    size_t readBytes = 0;
    uint32_t maxFileSize = block->max_file;
    int i = 0;
+   int i2 = 0;
    void *directory = calloc(1, maxFileSize);
    struct directory_entry *entries = calloc(MAX_DIRECTORY_ENTRIES,
     DIRECTORY_ENTRY_SIZE_BYTES);
+   struct inode *newNode;
    void *curPtr = directory;
    uint32_t zoneSize = block->blocksize << block->log_zone_size;
+   char *token;
    
    /* Reset pointer to start of file */
    fseek(imageFile, 0, SEEK_SET);
@@ -215,17 +224,51 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
       }
    }
    
-   i = 0;
-   /* Treat directory as many directory_entrys */
-   while (totalConverted < fileSize) {
-      memcpy(&entries[i], directory, sizeof(struct directory_entry));
-      directory += DIRECTORY_ENTRY_SIZE_BYTES;
-      totalConverted += DIRECTORY_ENTRY_SIZE_BYTES;
+   /* Reset the curptr */
+   curPtr = directory;
+   
+   /* Determine if we're looking at a directory or file */
+   if ((node->mode & FILE_TYPE_MASK) == DIRECTORY) {
+      i = 0;
       
-      printf("Directory inode: %d\n", entries[i].inode);
-      printf("Directory name: %s\n", entries[i].name);
+      /* Treat directory as many directory_entrys */
+      while (totalConverted < fileSize) {
+         memcpy(&entries[i], curPtr, sizeof(struct directory_entry));
+         curPtr += DIRECTORY_ENTRY_SIZE_BYTES;
+         totalConverted += DIRECTORY_ENTRY_SIZE_BYTES;
+     
+         i++;
+      }
       
-      i++;
+      /* Base case */
+      if (path == NULL) {
+         printDirectory(imageFile, directory, i, block);
+      }
+      else {
+         token = strtok(path, "/");
+         
+         while (i2 < i) {
+            /* On the right path */
+            if (!strcmp(token, (const char *)entries[i2].name)) {
+               printf("token: %s\n", token);
+               printf("entries[i2].name: %s\n", entries[i2].name);
+               printf("entries[i2].inode: %d\n", entries[i2].inode);
+               /* Recurse */
+               newNode = findInodeFile(imageFile, entries[i].inode, block, 1);
+               findActualFile(newNode, imageFile, block, token, vFlag);
+               break;
+            }
+            else
+               i2++;
+         }
+      }
+   }
+   /* Plain old file you see */
+   else if ((node->mode & FILE_TYPE_MASK) == REGULAR_FILE) {
+      
+   }
+   else { /* We got something wacky going on here! */
+      printf("Some wacky business\n");
    }
    
    /* Free directory_entrys */
@@ -239,10 +282,11 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
    struct inode *node;
    
    for (i = 0; i < numOfDirectories; i++) {
-      node = findInodeFile(imageFile, entry->inode, block, 0);
+      node = findInodeFile(imageFile, entry[i].inode, block, 0);
       
       
       printPermissionString(node->mode);
+      printf("    %s\n", entry[i].name);
    }
 }
 
@@ -377,6 +421,8 @@ int main(int argc, char **argv) {
          }
       }
    }
+   
+   printf("=====================\n");
    
    /* Initialize the superblock */
    imageFile = initialize(&block, partition, subpartition, pFlag, spFlag,
