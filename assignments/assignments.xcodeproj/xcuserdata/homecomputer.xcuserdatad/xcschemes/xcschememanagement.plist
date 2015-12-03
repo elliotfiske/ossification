@@ -19,6 +19,16 @@
 			<key>orderHint</key>
 			<integer>2</integer>
 		</dict>
+		<key>program3.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
+		<key>program5.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
@@ -33,6 +43,16 @@
 			<true/>
 		</dict>
 		<key>C96B30761BB90B05001C22BE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>C97F0C371C0D820500915E64</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>C9BA5B4C1BE159B400A761FC</key>
 		<dict>
 			<key>primary</key>
 			<true/>

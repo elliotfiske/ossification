@@ -67,6 +67,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5DE4DED21C0FD38600A45C26 /* TestImage */ = {isa = PBXFileReference; lastKnownFileType = file; path = TestImage; sourceTree = "<group>"; };
 		C9051FE61BCC7AE800CDA3C9 /* lwp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwp.h; path = assignments/program2/lwp.h; sourceTree = "<group>"; };
 		C9051FE71BCC7AE800CDA3C9 /* magic64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = magic64.S; path = assignments/program2/magic64.S; sourceTree = "<group>"; };
 		C9051FE81BCC7AE800CDA3C9 /* lwp_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lwp_main.c; path = assignments/program2/lwp_main.c; sourceTree = "<group>"; };
@@ -205,6 +206,7 @@
 		C97F0C3F1C0D821300915E64 /* program5 */ = {
 			isa = PBXGroup;
 			children = (
+				5DE4DED21C0FD38600A45C26 /* TestImage */,
 				C97F0C431C0D830B00915E64 /* minls.h */,
 				C97F0C421C0D823000915E64 /* testFilesystems */,
 				C97F0C401C0D821300915E64 /* minls.c */,
