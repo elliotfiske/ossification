@@ -294,6 +294,7 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
    }
 }
 
+<<<<<<< HEAD
 /* Prints the LS information for just a file */
 void printFile(FILE *imageFile, struct inode *node, struct superblock *block) {
    printPermissionString(node->mode);
@@ -301,6 +302,9 @@ void printFile(FILE *imageFile, struct inode *node, struct superblock *block) {
 }
 
 /** Given a directory entry, print the permission string like
+=======
+/** Given a file mode from the inode, print the permission string like
+>>>>>>> origin/master
     "drw-rwx-w-" or whatever. */
 void printPermissionString(uint16_t fileMode) {
    char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
