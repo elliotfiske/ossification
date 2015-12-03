@@ -37,11 +37,12 @@
 #define DIRECT_ZONES 7
 #define MAX_DIRECTORY_ENTRIES 512
 #define PERMISSIONS_STRING_SIZE 100
+#define BIG_STRING_SIZE 256
 
 int offset;
 int bitmapSize;
 int zoneSize;
-char originalFileName[100];
+char originalFileName[BIG_STRING_SIZE] = { 0 };
 
 struct superblock { /* Minix Version 3 Superblock
    * this structure found in fs/super.h
@@ -104,6 +105,7 @@ void printInode(struct inode *node);
 void printPermissionString(uint16_t fileMode);
 void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDirectories,
  struct superblock *block); // TODO: DELETE ^
+void printFile(FILE *imageFile, struct inode *node, struct superblock *block);
 
 /* Initializes the superblock, and partition table entry if specified */
 FILE *initialize(struct superblock *block, int partition, int subpartition,
@@ -229,6 +231,7 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
    
    /* Determine if we're looking at a directory or file */
    if ((node->mode & FILE_TYPE_MASK) == DIRECTORY) {
+      printf("Just a directory\n");
       i = 0;
       
       /* Treat directory as many directory_entrys */
@@ -250,11 +253,9 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
          while (i2 < i) {
             /* On the right path */
             if (!strcmp(token, (const char *)entries[i2].name)) {
-               printf("token: %s\n", token);
-               printf("entries[i2].name: %s\n", entries[i2].name);
-               printf("entries[i2].inode: %d\n", entries[i2].inode);
+               token = strtok(NULL, "/");
                /* Recurse */
-               newNode = findInodeFile(imageFile, entries[i].inode, block, 1);
+               newNode = findInodeFile(imageFile, entries[i2].inode, block, 0);
                findActualFile(newNode, imageFile, block, token, vFlag);
                break;
             }
@@ -265,7 +266,9 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
    }
    /* Plain old file you see */
    else if ((node->mode & FILE_TYPE_MASK) == REGULAR_FILE) {
+      printf("Plain old file\n");
       
+      printFile(imageFile, node, block);
    }
    else { /* We got something wacky going on here! */
       printf("Some wacky business\n");
@@ -286,11 +289,22 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
       
       
       printPermissionString(node->mode);
-      printf("    %s\n", entry[i].name);
+      printf("     %d", entry[i].inode);
+      printf(" %s\n", entry[i].name);
    }
 }
 
+<<<<<<< HEAD
+/* Prints the LS information for just a file */
+void printFile(FILE *imageFile, struct inode *node, struct superblock *block) {
+   printPermissionString(node->mode);
+   printf("    %s\n", originalFileName);
+}
+
+/** Given a directory entry, print the permission string like
+=======
 /** Given a file mode from the inode, print the permission string like
+>>>>>>> origin/master
     "drw-rwx-w-" or whatever. */
 void printPermissionString(uint16_t fileMode) {
    char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
@@ -421,6 +435,8 @@ int main(int argc, char **argv) {
          }
       }
    }
+   
+   strcpy(originalFileName, path);
    
    printf("=====================\n");
    
