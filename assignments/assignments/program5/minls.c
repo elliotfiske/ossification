@@ -178,7 +178,7 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
       if (vFlag == 1) {
          printInode(node);
       }
-
+      
    }
    else {
       printf("iNode read failed\n");
@@ -252,8 +252,9 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
             if (!strcmp(token, (const char *)entries[i2].name)) {
                printf("token: %s\n", token);
                printf("entries[i2].name: %s\n", entries[i2].name);
+               printf("entries[i2].inode: %d\n", entries[i2].inode);
                /* Recurse */
-               newNode = findInodeFile(imageFile, entries[i].inode, block, vFlag);
+               newNode = findInodeFile(imageFile, entries[i].inode, block, 1);
                findActualFile(newNode, imageFile, block, token, vFlag);
                break;
             }
