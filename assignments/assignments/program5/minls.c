@@ -14,7 +14,7 @@
 #define PARTITION_TABLE_LOC 0x1BE
 #define PARTITION_TYPE 0x81
 #define BYTE510 0x55
-#define BYTE11 0xAA
+#define BYTE511 0xAA
 #define MINIX_MAGIC_NUMBER 0x4D5A
 #define MINIX_MAGIC_NUMBER_REVERSED 0x5A4D
 #define INODE_SIZE_BYTES 64
@@ -38,8 +38,10 @@
 #define MAX_DIRECTORY_ENTRIES 512
 #define PERMISSIONS_STRING_SIZE 100
 #define BIG_STRING_SIZE 256
+#define SECTOR_SIZE 512
+#define VALID_PARTITION_CHECK 510
 
-int offset;
+uint32_t offset = 0;
 int bitmapSize;
 int zoneSize;
 char originalFileName[BIG_STRING_SIZE] = { 0 };
@@ -113,6 +115,8 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
    struct partition_entry mainPartition;
    struct partition_entry subPartition;
    uint32_t firstSector;
+   uint32_t validByte1 = 0;
+   uint32_t validByte2 = 0;
    FILE *diskImage = fopen(imageName, "r+");
    size_t readBytes = 0;
    
@@ -123,15 +127,50 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
  
    /* Attempt to read partition & subpartition */
    if (pFlag == 1) {
-      if (spFlag == 1) {
-         
+      /* Ensure it is a valid partition table */
+      fseek(diskImage, VALID_PARTITION_CHECK, SEEK_SET);
+      fread(&validByte1, 1, 1, diskImage); /* Not doing any fread err checks assume it works */
+      fread(&validByte2, 1, 1, diskImage); /* Check byte 511 */
+      
+      if (!(validByte1 == BYTE510 && validByte2 == BYTE511)) {
+         printf("Not a valid partition table\n");
+         exit(EXIT_FAILURE);
+      }
+   
+      /* Reset the file pointer */
+      fseek(diskImage, PARTITION_TABLE_LOC, SEEK_SET);
+      readBytes = fread(&mainPartition, sizeof(struct partition_entry), 1, diskImage);
+      
+      /* Ensure it is a Minix partition */
+      if (mainPartition.type == 0x81) {
+         offset = mainPartition.lFirst * SECTOR_SIZE + partition * SECTOR_SIZE;
       }
       else {
-         readBytes = fread(&mainPartition, sizeof(struct partition_entry), 1, diskImage);
+         printf("Not a Minix partition\n");
+      }
+      
+      if (spFlag == 1) {
+         /* Ensure it is a valid partition table */
+         fseek(diskImage, VALID_PARTITION_CHECK + offset, SEEK_SET);
+         //fread(&validByte1, 1, 1, diskImage);
+         //fread(&validByte2, 1, 1, diskImage); /* Check byte 511 */
+         
+         if (!(validByte1 == BYTE510 && validByte2 == BYTE511)) {
+            printf("Not a valid sub partition table\n");
+            exit(EXIT_FAILURE);
+         }
+      
+         /* Reset the file pointer */
+         fseek(diskImage, PARTITION_TABLE_LOC + offset, SEEK_SET);
+         readBytes = fread(&subPartition, sizeof(struct partition_entry), 1, diskImage);
+         
+         if (readBytes != 1) {
+            printf("Read subpartition error\n");
+         }
          
          /* Ensure it is a Minix partition */
-         if (mainPartition.type == 0x81) {
-            firstSector = mainPartition.lFirst;
+         if (subPartition.type == 0x81) {
+            offset += subPartition.lFirst * SECTOR_SIZE + subpartition * SECTOR_SIZE;
          }
          else {
             printf("Not a Minix partition\n");
@@ -139,13 +178,20 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
       }
    }
    else { /* Otherwise we treat it as unpartitioned */
-      fseek(diskImage, START_OF_SUPERBLOCK, SEEK_CUR);
+      fseek(diskImage, START_OF_SUPERBLOCK + offset, SEEK_CUR);
       
       readBytes = fread(block, sizeof(struct superblock), 1, diskImage);
       
       /* Error checking */
       if (readBytes == 1) {
-         printSuperblock(block);
+         if (block->magic != MINIX_MAGIC_NUMBER) {
+            printf("Bad magic number. (%x)\n", block->magic);
+            printf("This doesn't look like a MINIX filesystem.\n");
+            exit(EXIT_FAILURE);
+         }
+         if (vFlag == 1) {
+            printSuperblock(block);
+         }
       }
       else {
          printf("Failed to read disk image properly\n");
@@ -172,7 +218,7 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
    
    uint32_t offsetToInodes = numPaddingBlocks * blockSize + inode * sizeof(struct inode);
   
-   fseek(imageFile, offsetToInodes, SEEK_SET);
+   fseek(imageFile, offsetToInodes + offset, SEEK_SET);
  
    readBytes = fread(node, sizeof(struct inode), 1, imageFile);
    
@@ -206,13 +252,14 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
    void *curPtr = directory;
    uint32_t zoneSize = block->blocksize << block->log_zone_size;
    char *token;
+   char foundSomething = 0;
    
    /* Reset pointer to start of file */
-   fseek(imageFile, 0, SEEK_SET);
+   fseek(imageFile, offset, SEEK_SET);
    
    /* Read through all the direct zones */
    while (totalRead <= node->size && i < 7) {
-      fseek(imageFile, node->zone[i] * zoneSize, SEEK_SET);
+      fseek(imageFile, node->zone[i] * zoneSize + offset, SEEK_SET);
       readBytes = fread(curPtr, zoneSize, 1, imageFile);
       
       if (readBytes == 1) {
@@ -257,10 +304,16 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
                /* Recurse */
                newNode = findInodeFile(imageFile, entries[i2].inode, block, 0);
                findActualFile(newNode, imageFile, block, token, vFlag);
+               foundSomething = 1;
                break;
             }
             else
                i2++;
+         }
+         
+         /* If we didn't find anything */
+         if (!foundSomething) {
+            printf("minls: %s: No such file or directory\n", originalFileName);
          }
       }
    }
@@ -294,7 +347,6 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
    }
 }
 
-<<<<<<< HEAD
 /* Prints the LS information for just a file */
 void printFile(FILE *imageFile, struct inode *node, struct superblock *block) {
    printPermissionString(node->mode);
@@ -427,6 +479,7 @@ int main(int argc, char **argv) {
             i++;
             path = calloc(1, strlen(argv[i]));
             strcpy(path, argv[i]);
+            strcpy(originalFileName, path);
             
             printf("Path name: %s\n", path);
             
@@ -435,8 +488,6 @@ int main(int argc, char **argv) {
          }
       }
    }
-   
-   strcpy(originalFileName, path);
    
    printf("=====================\n");
    

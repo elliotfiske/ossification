@@ -64,12 +64,16 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "TestImage"
+            argument = "HardDisk"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-p 0 -s 2"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "src/system"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
