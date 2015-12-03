@@ -246,7 +246,7 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
    }
 }
 
-/** Given a directory entry, print the permission string like
+/** Given a file mode from the inode, print the permission string like
     "drw-rwx-w-" or whatever. */
 void printPermissionString(uint16_t fileMode) {
    char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
