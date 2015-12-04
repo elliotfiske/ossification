@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define PARTITION_TABLE_LOC 0x1BE
 #define PARTITION_TYPE 0x81
