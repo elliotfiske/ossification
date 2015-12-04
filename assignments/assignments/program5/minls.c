@@ -1,15 +1,8 @@
-//
-//  minls.c
-//  
-//
-//  Created by Jack Wang on 11/30/15.
-//
-//
-
 #include "minls.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define PARTITION_TABLE_LOC 0x1BE
 #define PARTITION_TYPE 0x81
@@ -114,19 +107,20 @@ struct directory_entry {
 void printSuperblock(struct superblock *block);
 void printInode(struct inode *node);
 void printPermissionString(uint16_t fileMode);
-void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDirectories,
+void printDirectory(FILE *imageFile, struct directory_entry *entry, int
+ numOfDirectories,
  struct superblock *block); // TODO: DELETE ^
-void printFile(FILE *imageFile, struct inode *node, struct superblock *block);
+void printFile(FILE *imageFile, struct inode *node,
+ struct superblock *block);
 
 /* Initializes the superblock, and partition table entry if specified */
 FILE *initialize(struct superblock *block, int partition, int subpartition,
                  int pFlag, int spFlag, char *imageName, char vFlag) {
    struct partition_entry mainPartition = { 0 };
    struct partition_entry subPartition = { 0 };
-   uint32_t firstSector;
    uint32_t validByte1 = 0;
    uint32_t validByte2 = 0;
-   FILE *diskImage = fopen(imageName, "r+");
+   FILE *diskImage = fopen(imageName, "r");
    size_t readBytes = 0;
    
    if (!diskImage) {
@@ -138,17 +132,18 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
    if (pFlag == 1) {
       /* Ensure it is a valid partition table */
       fseek(diskImage, VALID_PARTITION_CHECK, SEEK_SET);
-      fread(&validByte1, 1, 1, diskImage); /* Not doing any fread err checks assume it works */
+      fread(&validByte1, 1, 1, diskImage);
       fread(&validByte2, 1, 1, diskImage); /* Check byte 511 */
       
       if (!(validByte1 == BYTE510 && validByte2 == BYTE511)) {
-         printf("Not a valid partition table\n");
+         fprintf(stderr, "Not a valid partition table\n");
          exit(EXIT_FAILURE);
       }
    
       /* Reset the file pointer */
       fseek(diskImage, PARTITION_TABLE_LOC, SEEK_SET);
-      readBytes = fread(&mainPartition, sizeof(struct partition_entry), 1, diskImage);
+      readBytes = fread(&mainPartition, sizeof(struct partition_entry), 1,
+       diskImage);
       
       /* Ensure it is a Minix partition */
       if (mainPartition.type == 0x81) {
@@ -172,7 +167,8 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
       
          /* Reset the file pointer */
          fseek(diskImage, PARTITION_TABLE_LOC + offset, SEEK_SET);
-         readBytes = fread(&subPartition, sizeof(struct partition_entry), 1, diskImage);
+         readBytes = fread(&subPartition, sizeof(struct partition_entry),
+          1, diskImage);
          
          if (readBytes != 1) {
             printf("Read subpartition error\n");
@@ -180,7 +176,8 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
          
          /* Ensure it is a Minix partition */
          if (subPartition.type == 0x81) {
-            offset = subPartition.lFirst * SECTOR_SIZE + (subpartition * subPartition.size)  * SECTOR_SIZE;
+            offset = subPartition.lFirst * SECTOR_SIZE + (subpartition *
+             subPartition.size)  * SECTOR_SIZE;
          }
          else {
             printf("Not a Minix partition\n");
@@ -211,10 +208,9 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
 }
 
 /* Given an inode number, find the actual inode */
-struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block,
- char vFlag) {
+struct inode* findInodeFile(FILE *imageFile, int inode,
+ struct superblock *block, char vFlag) {
    struct inode* node = calloc(1, sizeof(struct inode));
-   uint32_t numberOfInodes = block->ninodes;
    uint16_t inodeBitmapBlocks = block->i_blocks;
    uint16_t zoneBitmapBlocks = block->z_blocks;
    uint16_t blockSize = block->blocksize;
@@ -226,7 +222,8 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
    
    inode -= 1; /* inodes start at 1 so yeah */
    
-   uint32_t offsetToInodes = numPaddingBlocks * blockSize + inode * sizeof(struct inode);
+   uint32_t offsetToInodes = numPaddingBlocks * blockSize + inode *
+    sizeof(struct inode);
   
    fseek(imageFile, offsetToInodes + offset, SEEK_SET);
  
@@ -239,15 +236,16 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
       
    }
    else {
-      printf("iNode read failed\n");
+      fprintf(stderr, "iNode read failed\n");
    }
  
    return node;
 }
 
 /* Finds the actual file given the root inode */
-void findActualFile(struct inode *node, FILE *imageFile, struct superblock *block, char
- *path, char vFlag, char firstIteration) {
+void findActualFile(struct inode *node, FILE *imageFile,
+ struct superblock *block, char
+  *path, char vFlag, char firstIteration) {
    uint32_t fileSize = node->size; /* File size in bytes */
    uint32_t totalRead = 0;
    uint32_t totalConverted = 0;
@@ -333,7 +331,8 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
          
          /* If we didn't find anything */
          if (!foundSomething) {
-            printf("minls: %s: No such file or directory\n", originalFileName);
+            printf("minls: %s: No such file or directory\n",
+             originalFileName);
          }
       }
    }
@@ -350,8 +349,9 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
 }
 
 /* Prints the LS information for a directory */
-void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDirectories,
- struct superblock *block) {
+void printDirectory(FILE *imageFile, struct directory_entry *entry,
+ int numOfDirectories,
+  struct superblock *block) {
    int i;
    struct inode *node;
    printf("%s\n", originalFileName);
@@ -367,7 +367,8 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
 }
 
 /* Prints the LS information for just a file */
-void printFile(FILE *imageFile, struct inode *node, struct superblock *block) {
+void printFile(FILE *imageFile, struct inode *node,
+ struct superblock *block) {
    printPermissionString(node->mode);
    printf("%9lu",  (unsigned long)node->size);
    printf(" %s\n", originalFileName);
@@ -476,11 +477,6 @@ int main(int argc, char **argv) {
    struct inode* currentInode;
    FILE *imageFile;
    
-   /*printf("Size of superblock: %lu\n", sizeof(struct superblock));
-   printf("Size of inode: %lu\n", sizeof(struct inode));
-   printf("Size of partition_entry: %lu\n", sizeof(struct partition_entry));
-   printf("Size of directory_entry: %lu\n", sizeof(struct directory_entry));*/
-   
    if (strcmp(argv[0], "minls"))
       runLS = 1;
    else if (strcmp(argv[0], "minget"))
@@ -560,7 +556,7 @@ int main(int argc, char **argv) {
    /* Get the first inode */
    currentInode = findInodeFile(imageFile, 1, &block, vFlag);
    
-   /* Iterate through inode and compare paths - lots of stuff to do here for sure */
+   /* Iterate through inode and compare paths */
    findActualFile(currentInode, imageFile, &block, path, vFlag, 1);
 
 }

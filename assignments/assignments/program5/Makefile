@@ -1,12 +1,16 @@
 CC	= gcc
-CFLAGS = -Wall -I .
-CFLAGS_DEBUG = -g $(CFLAGS)
-LD	= gcc
-LDFLAGS = -Wall -g -L
+CFLAGS = -Wall -g -fpic
 
-all: 
+intel-all: minls minget
 
-minls.o:
-	$(CC) $(CFLAGS)
+all: minls minget
+	
+minls: minls.c
+	$(CC) $(CFLAGS) minls.c -o minls
 
-minget.o:
+minget: minls.c
+	$(CC) $(CFLAGS) minls.c -o minget
+
+ clean:
+	rm -f minget
+	rm -f minls
