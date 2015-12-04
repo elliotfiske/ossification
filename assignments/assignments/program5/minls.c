@@ -185,6 +185,24 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
             printf("Not a Minix partition\n");
          }
       }
+      
+      fseek(diskImage, START_OF_SUPERBLOCK + offset, SEEK_SET);
+      readBytes = fread(block, sizeof(struct superblock), 1, diskImage);
+      
+      /* Error checking */
+      if (readBytes == 1) {
+         if (block->magic != MINIX_MAGIC_NUMBER) {
+            printf("Bad magic number. (%x)\n", block->magic);
+            printf("This doesn't look like a MINIX filesystem.\n");
+            exit(EXIT_FAILURE);
+         }
+         if (vFlag == 1) {
+            printSuperblock(block);
+         }
+      }
+      else {
+         printf("Failed to read disk image properly\n");
+      }
    }
    else { /* Otherwise we treat it as unpartitioned */
       fseek(diskImage, START_OF_SUPERBLOCK + offset, SEEK_CUR);
