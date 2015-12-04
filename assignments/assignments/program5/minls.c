@@ -35,8 +35,8 @@
 #define VALID_PARTITION_CHECK 510
 
 uint32_t offset = 0;
-int bitmapSize;
-int zoneSize;
+int bitmapSize = 0;
+int zoneSize = 0;
 char originalFileName[BIG_STRING_SIZE] = { 0 };
 char destinationPath[BIG_STRING_SIZE] = { 0 };
 uint32_t fileInode = 0;
@@ -227,9 +227,15 @@ struct inode* findInodeFile(FILE *imageFile, int inode,
    uint32_t offsetToInodes = numPaddingBlocks * blockSize + inode *
     sizeof(struct inode);
   
+   printf("%d %hu %d %lu\n", numPaddingBlocks,
+    blockSize, inode, sizeof(struct inode));
+  
    fseek(imageFile, offsetToInodes + offset, SEEK_SET);
  
    readBytes = fread(node, sizeof(struct inode), 1, imageFile);
+
+   printf("offsetToInodes + offset: %lu\n", (unsigned long)(
+    offsetToInodes + offset));
 
    if (readBytes == 1) {
       if (vFlag == 1) {
@@ -252,10 +258,10 @@ void findActualFile(struct inode *node, FILE *imageFile,
    uint32_t totalRead = 0;
    uint32_t totalConverted = 0;
    size_t readBytes = 0;
-   uint32_t maxFileSize = block->max_file;
    int i = 0;
    int i2 = 0;
-   void *directory = calloc(1, maxFileSize);
+   void *directory = calloc(1, MAX_DIRECTORY_ENTRIES *
+    DIRECTORY_ENTRY_SIZE_BYTES);
    struct directory_entry *entries = calloc(MAX_DIRECTORY_ENTRIES,
     DIRECTORY_ENTRY_SIZE_BYTES);
    struct inode *newNode;
@@ -266,7 +272,7 @@ void findActualFile(struct inode *node, FILE *imageFile,
    
    /* Reset pointer to start of file */
    fseek(imageFile, offset, SEEK_SET);
-   
+   printf("before reading through all direct zones\n");
    /* Read through all the direct zones */
    while (totalRead <= node->size && i < 7) {
       fseek(imageFile, node->zone[i] * zoneSize + offset, SEEK_SET);
@@ -289,7 +295,7 @@ void findActualFile(struct inode *node, FILE *imageFile,
    /* Determine if we're looking at a directory or file */
    if ((node->mode & FILE_TYPE_MASK) == DIRECTORY) {
       i = 0;
-      
+      printf("just a directory\n");
       /* Treat directory as many directory_entrys */
       while (totalConverted < fileSize) {
          memcpy(&entries[i], curPtr, sizeof(struct directory_entry));
@@ -376,7 +382,7 @@ void printFile(FILE *imageFile, struct inode *node,
    printf(" %s\n", originalFileName);
 }
 
-/** Given a directory entry, print the permission string like
+/** Given a file mode from the inode, print the permission string like
     "drw-rwx-w-" or whatever. */
 void printPermissionString(uint16_t fileMode) {
    char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
