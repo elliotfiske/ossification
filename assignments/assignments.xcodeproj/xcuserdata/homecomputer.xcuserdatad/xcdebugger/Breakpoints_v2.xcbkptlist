@@ -65,12 +65,28 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "assignments/program5/minls.c"
-            timestampString = "470902744.686422"
+            timestampString = "470904075.967784"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "319"
-            endingLineNumber = "319"
+            startingLineNumber = "306"
+            endingLineNumber = "306"
             landmarkName = "findActualFile()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "assignments/program5/minls.c"
+            timestampString = "470904075.967784"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "230"
+            endingLineNumber = "230"
+            landmarkName = "findInodeFile()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -97,11 +113,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "assignments/program5/minls.c"
-            timestampString = "470902744.686422"
+            timestampString = "470904075.967784"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "302"
-            endingLineNumber = "302"
+            startingLineNumber = "290"
+            endingLineNumber = "290"
             landmarkName = "findActualFile()"
             landmarkType = "7">
          </BreakpointContent>

@@ -227,15 +227,9 @@ struct inode* findInodeFile(FILE *imageFile, int inode,
    uint32_t offsetToInodes = numPaddingBlocks * blockSize + inode *
     sizeof(struct inode);
   
-   printf("%d %hu %d %lu\n", numPaddingBlocks,
-    blockSize, inode, sizeof(struct inode));
-  
    fseek(imageFile, offsetToInodes + offset, SEEK_SET);
  
    readBytes = fread(node, sizeof(struct inode), 1, imageFile);
-
-   printf("offsetToInodes + offset: %lu\n", (unsigned long)(
-    offsetToInodes + offset));
 
    if (readBytes == 1) {
       if (vFlag == 1) {
@@ -272,7 +266,7 @@ void findActualFile(struct inode *node, FILE *imageFile,
    
    /* Reset pointer to start of file */
    fseek(imageFile, offset, SEEK_SET);
-   printf("before reading through all direct zones\n");
+
    /* Read through all the direct zones */
    while (totalRead <= node->size && i < 7) {
       fseek(imageFile, node->zone[i] * zoneSize + offset, SEEK_SET);
@@ -295,7 +289,6 @@ void findActualFile(struct inode *node, FILE *imageFile,
    /* Determine if we're looking at a directory or file */
    if ((node->mode & FILE_TYPE_MASK) == DIRECTORY) {
       i = 0;
-      printf("just a directory\n");
       /* Treat directory as many directory_entrys */
       while (totalConverted < fileSize) {
          memcpy(&entries[i], curPtr, sizeof(struct directory_entry));
@@ -362,6 +355,7 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry,
   struct superblock *block) {
    int i;
    struct inode *node;
+   printf("/:\n");
    printf("%s\n", originalFileName);
    
    for (i = 0; i < numOfDirectories; i++) {
@@ -567,4 +561,5 @@ int main(int argc, char **argv) {
    /* Iterate through inode and compare paths */
    findActualFile(currentInode, imageFile, &block, path, vFlag, 1);
 
+   return EXIT_SUCCESS;
 }
