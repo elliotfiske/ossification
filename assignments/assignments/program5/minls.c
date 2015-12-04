@@ -46,6 +46,13 @@ uint32_t offset = 0;
 int bitmapSize;
 int zoneSize;
 char originalFileName[BIG_STRING_SIZE] = { 0 };
+char destinationPath[BIG_STRING_SIZE] = { 0 };
+uint32_t fileInode = 0;
+char runLS = 0;
+char runGet = 0;
+char printGetOut = 0;
+
+
 
 struct superblock { /* Minix Version 3 Superblock
    * this structure found in fs/super.h
@@ -85,6 +92,8 @@ struct inode {
    uint32_t unused;
 };
 
+struct inode curNode = { 0 }; // INODE is here
+
 struct partition_entry {
    uint8_t bootind; /* Boot magic number (0x80 if bootable) */
    uint8_t start_head; /* Start of partition in CHS */
@@ -113,8 +122,8 @@ void printFile(FILE *imageFile, struct inode *node, struct superblock *block);
 /* Initializes the superblock, and partition table entry if specified */
 FILE *initialize(struct superblock *block, int partition, int subpartition,
                  int pFlag, int spFlag, char *imageName, char vFlag) {
-   struct partition_entry mainPartition;
-   struct partition_entry subPartition;
+   struct partition_entry mainPartition = { 0 };
+   struct partition_entry subPartition = { 0 };
    uint32_t firstSector;
    uint32_t validByte1 = 0;
    uint32_t validByte2 = 0;
@@ -144,7 +153,8 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
       
       /* Ensure it is a Minix partition */
       if (mainPartition.type == 0x81) {
-         offset = mainPartition.lFirst * SECTOR_SIZE + partition * SECTOR_SIZE;
+         offset = (mainPartition.lFirst + partition * mainPartition.size)
+          * SECTOR_SIZE;
       }
       else {
          printf("Not a Minix partition\n");
@@ -153,8 +163,8 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
       if (spFlag == 1) {
          /* Ensure it is a valid partition table */
          fseek(diskImage, VALID_PARTITION_CHECK + offset, SEEK_SET);
-         //fread(&validByte1, 1, 1, diskImage);
-         //fread(&validByte2, 1, 1, diskImage); /* Check byte 511 */
+         fread(&validByte1, 1, 1, diskImage);
+         fread(&validByte2, 1, 1, diskImage); /* Check byte 511 */
          
          if (!(validByte1 == BYTE510 && validByte2 == BYTE511)) {
             printf("Not a valid sub partition table\n");
@@ -171,7 +181,7 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
          
          /* Ensure it is a Minix partition */
          if (subPartition.type == 0x81) {
-            offset += subPartition.lFirst * SECTOR_SIZE + subpartition * SECTOR_SIZE;
+            offset = subPartition.lFirst * SECTOR_SIZE + (subpartition * subPartition.size)  * SECTOR_SIZE;
          }
          else {
             printf("Not a Minix partition\n");
@@ -238,7 +248,7 @@ struct inode* findInodeFile(FILE *imageFile, int inode, struct superblock *block
 
 /* Finds the actual file given the root inode */
 void findActualFile(struct inode *node, FILE *imageFile, struct superblock *block, char
- *path, char vFlag) {
+ *path, char vFlag, char firstIteration) {
    uint32_t fileSize = node->size; /* File size in bytes */
    uint32_t totalRead = 0;
    uint32_t totalConverted = 0;
@@ -279,7 +289,6 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
    
    /* Determine if we're looking at a directory or file */
    if ((node->mode & FILE_TYPE_MASK) == DIRECTORY) {
-      printf("Just a directory\n");
       i = 0;
       
       /* Treat directory as many directory_entrys */
@@ -296,15 +305,26 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
          printDirectory(imageFile, directory, i, block);
       }
       else {
-         token = strtok(path, "/");
+         if (firstIteration) {
+            token = strtok(path, "/");
+         }
+         else {
+            token = strtok(NULL, "/");
+         }
          
+         if (token == NULL) {
+            printDirectory(imageFile, directory, i, block);
+            exit(EXIT_SUCCESS);
+         }
+
          while (i2 < i) {
             /* On the right path */
             if (!strcmp(token, (const char *)entries[i2].name)) {
-               token = strtok(NULL, "/");
+               fileInode = entries[i2].inode;
+               
                /* Recurse */
                newNode = findInodeFile(imageFile, entries[i2].inode, block, 0);
-               findActualFile(newNode, imageFile, block, token, vFlag);
+               findActualFile(newNode, imageFile, block, path, vFlag, 0);
                foundSomething = 1;
                break;
             }
@@ -320,8 +340,6 @@ void findActualFile(struct inode *node, FILE *imageFile, struct superblock *bloc
    }
    /* Plain old file you see */
    else if ((node->mode & FILE_TYPE_MASK) == REGULAR_FILE) {
-      printf("Plain old file\n");
-      
       printFile(imageFile, node, block);
    }
    else { /* We got something wacky going on here! */
@@ -337,13 +355,14 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
  struct superblock *block) {
    int i;
    struct inode *node;
+   printf("%s\n", originalFileName);
    
    for (i = 0; i < numOfDirectories; i++) {
       node = findInodeFile(imageFile, entry[i].inode, block, 0);
       
       
       printPermissionString(node->mode);
-      printf("     %d", entry[i].inode);
+      printf("%10lu", (unsigned long)node->size);
       printf(" %s\n", entry[i].name);
    }
 }
@@ -351,13 +370,11 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry, int numOfDir
 /* Prints the LS information for just a file */
 void printFile(FILE *imageFile, struct inode *node, struct superblock *block) {
    printPermissionString(node->mode);
-   printf("    %s\n", originalFileName);
+   printf("%9lu",  (unsigned long)node->size);
+   printf(" %s\n", originalFileName);
 }
 
 /** Given a directory entry, print the permission string like
-=======
-/** Given a file mode from the inode, print the permission string like
->>>>>>> origin/master
     "drw-rwx-w-" or whatever. */
 void printPermissionString(uint16_t fileMode) {
    char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
@@ -383,35 +400,42 @@ void printPermissionString(uint16_t fileMode) {
 
 /* Prints the superblock contents */
 void printSuperblock(struct superblock *block) {
-   printf("Superblock Contents\n");
-   printf("Stored Fields:\n");
-   printf("ninodes %d\n", block->ninodes);
-   printf("i_blocks %d\n", block->i_blocks);
-   printf("z_blocks %d\n", block->z_blocks);
-   printf("firstdata %d\n", block->firstdata);
-   printf("log_zone_size %d\n", block->log_zone_size);
-   printf("max_file %d\n", block->max_file);
-   printf("magic 0x%x\n", block->magic);
-   printf("zones %d\n", block->zones);
-   printf("blocksize %d\n", block->blocksize);
-   printf("subversion %d\n", block->subversion);
+   fprintf(stderr, "Superblock Contents\n");
+   fprintf(stderr, "Stored Fields:\n");
+   fprintf(stderr, "  ninodes %d\n", block->ninodes);
+   fprintf(stderr, "  i_blocks %d\n", block->i_blocks);
+   fprintf(stderr, "  z_blocks %d\n", block->z_blocks);
+   fprintf(stderr, "  firstdata %d\n", block->firstdata);
+   fprintf(stderr, "  log_zone_size %d\n", block->log_zone_size);
+   fprintf(stderr, "  max_file %d\n", block->max_file);
+   fprintf(stderr, "  magic 0x%x\n", block->magic);
+   fprintf(stderr, "  zones %d\n", block->zones);
+   fprintf(stderr, "  blocksize %d\n", block->blocksize);
+   fprintf(stderr, "  subversion %d\n", block->subversion);
 }
 
 /* Prints the inode contents */
 void printInode(struct inode *node) {
-   printf("File inode:\n");
-   printf("uint16_t mode 0x%x\n", node->mode);
-   printf("uint16_t links %d\n", node->links);
-   printf("uint16_t uid %d\n", node->uid);
-   printf("uint16_t gid %d\n", node->gid);
-   printf("uint32_t size %d\n", node->size);
-   printf("int32_t atime %d\n", node->atime);
-   printf("int32_t mtime %d\n", node->mtime);
-   printf("int32_t ctime %d\n", node->ctime);
-   printf("Direct zones: IDK\n");
-   printf("uint32_t indirect %d\n", node->indirect);
-   printf("uint32_t two_indirect %d\n", node->two_indirect);
-   printf("uint32_t unused %d\n", node->unused);
+   fprintf(stderr, "File inode:\n");
+   fprintf(stderr, "  uint16_t mode 0x%x\n", node->mode);
+   fprintf(stderr, "  uint16_t links %d\n", node->links);
+   fprintf(stderr, "  uint16_t uid %d\n", node->uid);
+   fprintf(stderr, "  uint16_t gid %d\n", node->gid);
+   fprintf(stderr, "  uint32_t size %d\n", node->size);
+   fprintf(stderr, "  int32_t atime %d\n", node->atime);
+   fprintf(stderr, "  int32_t mtime %d\n", node->mtime);
+   fprintf(stderr, "  int32_t ctime %d\n", node->ctime);
+   fprintf(stderr, "  Direct zones:\n");
+   fprintf(stderr, "        zone[0]  =   %d\n", node->zone[0]);
+   fprintf(stderr, "        zone[1]  =   %d\n", node->zone[1]);
+   fprintf(stderr, "        zone[2]  =   %d\n", node->zone[2]);
+   fprintf(stderr, "        zone[3]  =   %d\n", node->zone[3]);
+   fprintf(stderr, "        zone[4]  =   %d\n", node->zone[4]);
+   fprintf(stderr, "        zone[5]  =   %d\n", node->zone[5]);
+   fprintf(stderr, "        zone[6]  =   %d\n", node->zone[6]);
+   fprintf(stderr, "  uint32_t indirect %d\n", node->indirect);
+   fprintf(stderr, "  uint32_t two_indirect %d\n", node->two_indirect);
+   fprintf(stderr, "  uint32_t unused %d\n", node->unused);
 }
 
 /* Prints the partition table */
@@ -421,8 +445,17 @@ void printPartitionTable(struct partition_entry *entry) {
 
 
 /* Prints the correct usage of minls */
-void print_correct_usage() {
+void print_correct_minls_usage() {
    printf("usage: minls [ -v ] [ -p num [ -s num ] ] imagefile [ path ]\n");
+   printf("Options:\n");
+   printf("\t-p part --- select partition for filesystem (default: none)\n");
+   printf("\t-s sub --- select subpartition for filesystem (default: none)\n");
+   printf("\t-h help --- print usage information and exit\n");
+   printf("\t-v verbose --- increase verbosity level)\n");
+}
+/* Prints correct usage of minget */
+void print_correct_minget_usage() {
+   printf("usage: minget [ -v ] [ -p num [ -s num ] ] imagefile [ path ]\n");
    printf("Options:\n");
    printf("\t-p part --- select partition for filesystem (default: none)\n");
    printf("\t-s sub --- select subpartition for filesystem (default: none)\n");
@@ -435,71 +468,100 @@ int main(int argc, char **argv) {
    char pFlag = 0;
    char spFlag = 0;
    char pathFlag = 0;
-   char *imageName, *path;
-   int partition, subpartition;
+   char *imageName = NULL;
+   char *path = NULL;
+   int partition = 0;
+   int subpartition = 0;
    int i;
    struct superblock block;
    struct inode* currentInode;
    FILE *imageFile;
    
-   printf("Size of superblock: %lu\n", sizeof(struct superblock));
+   /*printf("Size of superblock: %lu\n", sizeof(struct superblock));
    printf("Size of inode: %lu\n", sizeof(struct inode));
    printf("Size of partition_entry: %lu\n", sizeof(struct partition_entry));
-   printf("Size of directory_entry: %lu\n", sizeof(struct directory_entry));
+   printf("Size of directory_entry: %lu\n", sizeof(struct directory_entry));*/
+   
+   if (strcmp(argv[0], "minls"))
+      runLS = 1;
+   else if (strcmp(argv[0], "minget"))
+      runGet = 1;
    
    if (argc < 2) {
-      print_correct_usage();
+      if (runLS == 1)
+         print_correct_minls_usage();
+      else if (runGet == 1)
+         print_correct_minget_usage();
    }
    
    for (i = 1; i < argc ; i++) {
       if (!strcmp(argv[i], "-v")) {
          vFlag = 1;
-         
-         printf("Verbose\n");
       }
       else if (!strcmp(argv[i], "-p")){
          i++;
          partition = atoi(argv[i]);
          
-         printf("Partition: %d\n", partition);
          pFlag = 1;
       }
       else if (!strcmp(argv[i], "-s")){
          i++;
          subpartition = atoi(argv[i]);
          
-         printf("Subpartition: %d\n", subpartition);
          spFlag = 1;
       }
       else {
          imageName = calloc(1, strlen(argv[i]));
          strcpy(imageName, argv[i]);
-         printf("Image name: %s\n", imageName);
          
-         if (i + 2 == argc) {
-            i++;
-            path = calloc(1, strlen(argv[i]));
-            strcpy(path, argv[i]);
-            strcpy(originalFileName, path);
-            
-            printf("Path name: %s\n", path);
-            
-            pathFlag = 1;
-            break;
+         if (runLS == 1) { /* minls */
+            if (i + 2 == argc) {
+               i++;
+               path = calloc(1, strlen(argv[i]));
+               strcpy(path, argv[i]);
+               strcpy(originalFileName, path);
+               
+               pathFlag = 1;
+               break;
+            }
+         }
+         else if (runGet == 1) { /* minget */
+            if (i + 3 == argc) { /* Print to path */
+               i++;
+               path = calloc(1, strlen(argv[i]));
+               strcpy(path, argv[i]);
+               strcpy(originalFileName, path);
+               
+               i++;
+               strcpy(destinationPath, argv[i]);
+               
+               pathFlag = 1;
+               break;
+            }
+            else if (i + 2 == argc) { /* Print to stdout */
+               printGetOut = 1;
+               
+            }
          }
       }
    }
    
-   printf("=====================\n");
+   if (imageName == NULL) {
+      if (runLS == 1)
+         print_correct_minls_usage();
+      else if (runGet == 1)
+         print_correct_minget_usage();
+      exit(EXIT_FAILURE);
+   }
    
    /* Initialize the superblock */
-   imageFile = initialize(&block, partition, subpartition, pFlag, spFlag,
-    imageName, vFlag);
+   imageFile = initialize(&block, partition,
+    subpartition, pFlag, spFlag, imageName, vFlag);
    
    /* Get the first inode */
    currentInode = findInodeFile(imageFile, 1, &block, vFlag);
    
    /* Iterate through inode and compare paths - lots of stuff to do here for sure */
-   findActualFile(currentInode, imageFile, &block, path, vFlag);
+   findActualFile(currentInode, imageFile, &block, path, vFlag, 1);
 
 }
