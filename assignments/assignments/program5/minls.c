@@ -35,9 +35,9 @@
 #define VALID_PARTITION_CHECK 510
 
 uint32_t offset = 0;
-int bitmapSize;
-int zoneSize;
-char originalFileName[BIG_STRING_SIZE] = { 0 };
+int bitmapSize = 0;
+int zoneSize = 0;
+char originalFileName[BIG_STRING_SIZE] = "/:";
 char destinationPath[BIG_STRING_SIZE] = { 0 };
 uint32_t fileInode = 0;
 char runLS = 0;
@@ -252,10 +252,10 @@ void findActualFile(struct inode *node, FILE *imageFile,
    uint32_t totalRead = 0;
    uint32_t totalConverted = 0;
    size_t readBytes = 0;
-   uint32_t maxFileSize = block->max_file;
    int i = 0;
    int i2 = 0;
-   void *directory = calloc(1, maxFileSize);
+   void *directory = calloc(1, MAX_DIRECTORY_ENTRIES *
+    DIRECTORY_ENTRY_SIZE_BYTES);
    struct directory_entry *entries = calloc(MAX_DIRECTORY_ENTRIES,
     DIRECTORY_ENTRY_SIZE_BYTES);
    struct inode *newNode;
@@ -266,7 +266,7 @@ void findActualFile(struct inode *node, FILE *imageFile,
    
    /* Reset pointer to start of file */
    fseek(imageFile, offset, SEEK_SET);
-   
+
    /* Read through all the direct zones */
    while (totalRead <= node->size && i < 7) {
       fseek(imageFile, node->zone[i] * zoneSize + offset, SEEK_SET);
@@ -289,7 +289,6 @@ void findActualFile(struct inode *node, FILE *imageFile,
    /* Determine if we're looking at a directory or file */
    if ((node->mode & FILE_TYPE_MASK) == DIRECTORY) {
       i = 0;
-      
       /* Treat directory as many directory_entrys */
       while (totalConverted < fileSize) {
          memcpy(&entries[i], curPtr, sizeof(struct directory_entry));
@@ -561,4 +560,5 @@ int main(int argc, char **argv) {
    /* Iterate through inode and compare paths */
    findActualFile(currentInode, imageFile, &block, path, vFlag, 1);
 
+   return EXIT_SUCCESS;
 }
