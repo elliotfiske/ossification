@@ -88,20 +88,20 @@
 		C97F0C431C0D830B00915E64 /* minls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = minls.h; sourceTree = "<group>"; };
 		C9BA5B4D1BE159B400A761FC /* program3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program3; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9BA5B4F1BE159B400A761FC /* dining.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dining.c; sourceTree = "<group>"; };
-		C9E09CB11C0EC054009E6363 /* BigDirectories */ = {isa = PBXFileReference; lastKnownFileType = file; name = BigDirectories; path = ../unix_side/files_given/images/BigDirectories; sourceTree = "<group>"; };
-		C9E09CB21C0EC054009E6363 /* BigIndirectDirs */ = {isa = PBXFileReference; lastKnownFileType = file; name = BigIndirectDirs; path = ../unix_side/files_given/images/BigIndirectDirs; sourceTree = "<group>"; };
-		C9E09CB31C0EC054009E6363 /* BigZones-16k */ = {isa = PBXFileReference; lastKnownFileType = file; name = "BigZones-16k"; path = "../unix_side/files_given/images/BigZones-16k"; sourceTree = "<group>"; };
-		C9E09CB41C0EC054009E6363 /* BlankDisk */ = {isa = PBXFileReference; lastKnownFileType = file; name = BlankDisk; path = ../unix_side/files_given/images/BlankDisk; sourceTree = "<group>"; };
-		C9E09CB51C0EC054009E6363 /* BrokenStuff */ = {isa = PBXFileReference; lastKnownFileType = file; name = BrokenStuff; path = ../unix_side/files_given/images/BrokenStuff; sourceTree = "<group>"; };
-		C9E09CB61C0EC054009E6363 /* Files */ = {isa = PBXFileReference; lastKnownFileType = file; name = Files; path = ../unix_side/files_given/images/Files; sourceTree = "<group>"; };
-		C9E09CB71C0EC054009E6363 /* HardDisk */ = {isa = PBXFileReference; lastKnownFileType = file; name = HardDisk; path = ../unix_side/files_given/images/HardDisk; sourceTree = "<group>"; };
+		C9E09CB11C0EC054009E6363 /* BigDirectories */ = {isa = PBXFileReference; lastKnownFileType = text; name = BigDirectories; path = ../unix_side/files_given/images/BigDirectories; sourceTree = "<group>"; };
+		C9E09CB21C0EC054009E6363 /* BigIndirectDirs */ = {isa = PBXFileReference; lastKnownFileType = text; name = BigIndirectDirs; path = ../unix_side/files_given/images/BigIndirectDirs; sourceTree = "<group>"; };
+		C9E09CB31C0EC054009E6363 /* BigZones-16k */ = {isa = PBXFileReference; lastKnownFileType = text; name = "BigZones-16k"; path = "../unix_side/files_given/images/BigZones-16k"; sourceTree = "<group>"; };
+		C9E09CB41C0EC054009E6363 /* BlankDisk */ = {isa = PBXFileReference; lastKnownFileType = text; name = BlankDisk; path = ../unix_side/files_given/images/BlankDisk; sourceTree = "<group>"; };
+		C9E09CB51C0EC054009E6363 /* BrokenStuff */ = {isa = PBXFileReference; lastKnownFileType = text; name = BrokenStuff; path = ../unix_side/files_given/images/BrokenStuff; sourceTree = "<group>"; };
+		C9E09CB61C0EC054009E6363 /* Files */ = {isa = PBXFileReference; lastKnownFileType = text; name = Files; path = ../unix_side/files_given/images/Files; sourceTree = "<group>"; };
+		C9E09CB71C0EC054009E6363 /* HardDisk */ = {isa = PBXFileReference; lastKnownFileType = text; name = HardDisk; path = ../unix_side/files_given/images/HardDisk; sourceTree = "<group>"; };
 		C9E09CB81C0EC054009E6363 /* Notes */ = {isa = PBXFileReference; lastKnownFileType = text; name = Notes; path = ../unix_side/files_given/images/Notes; sourceTree = "<group>"; };
-		C9E09CB91C0EC054009E6363 /* Partitioned */ = {isa = PBXFileReference; lastKnownFileType = file; name = Partitioned; path = ../unix_side/files_given/images/Partitioned; sourceTree = "<group>"; };
-		C9E09CBA1C0EC054009E6363 /* RandomDisk */ = {isa = PBXFileReference; lastKnownFileType = file; name = RandomDisk; path = ../unix_side/files_given/images/RandomDisk; sourceTree = "<group>"; };
-		C9E09CBB1C0EC054009E6363 /* ReallyBigZones-64k */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ReallyBigZones-64k"; path = "../unix_side/files_given/images/ReallyBigZones-64k"; sourceTree = "<group>"; };
-		C9E09CBC1C0EC054009E6363 /* SmallBlocks--1k */ = {isa = PBXFileReference; lastKnownFileType = file; name = "SmallBlocks--1k"; path = "../unix_side/files_given/images/SmallBlocks--1k"; sourceTree = "<group>"; };
-		C9E09CBD1C0EC054009E6363 /* TestImage */ = {isa = PBXFileReference; lastKnownFileType = file; name = TestImage; path = ../unix_side/files_given/images/TestImage; sourceTree = "<group>"; };
-		C9E09CBE1C0EC054009E6363 /* WeirdStuff */ = {isa = PBXFileReference; lastKnownFileType = file; name = WeirdStuff; path = ../unix_side/files_given/images/WeirdStuff; sourceTree = "<group>"; };
+		C9E09CB91C0EC054009E6363 /* Partitioned */ = {isa = PBXFileReference; lastKnownFileType = text; name = Partitioned; path = ../unix_side/files_given/images/Partitioned; sourceTree = "<group>"; };
+		C9E09CBA1C0EC054009E6363 /* RandomDisk */ = {isa = PBXFileReference; lastKnownFileType = text; name = RandomDisk; path = ../unix_side/files_given/images/RandomDisk; sourceTree = "<group>"; };
+		C9E09CBB1C0EC054009E6363 /* ReallyBigZones-64k */ = {isa = PBXFileReference; lastKnownFileType = text; name = "ReallyBigZones-64k"; path = "../unix_side/files_given/images/ReallyBigZones-64k"; sourceTree = "<group>"; };
+		C9E09CBC1C0EC054009E6363 /* SmallBlocks--1k */ = {isa = PBXFileReference; lastKnownFileType = text; name = "SmallBlocks--1k"; path = "../unix_side/files_given/images/SmallBlocks--1k"; sourceTree = "<group>"; };
+		C9E09CBD1C0EC054009E6363 /* TestImage */ = {isa = PBXFileReference; lastKnownFileType = text; name = TestImage; path = ../unix_side/files_given/images/TestImage; sourceTree = "<group>"; };
+		C9E09CBE1C0EC054009E6363 /* WeirdStuff */ = {isa = PBXFileReference; lastKnownFileType = text; name = WeirdStuff; path = ../unix_side/files_given/images/WeirdStuff; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,18 +208,10 @@
 			children = (
 				5DE4DED21C0FD38600A45C26 /* TestImage */,
 				C97F0C431C0D830B00915E64 /* minls.h */,
-				C97F0C421C0D823000915E64 /* testFilesystems */,
 				C97F0C401C0D821300915E64 /* minls.c */,
 			);
 			name = program5;
 			path = assignments/program5;
-			sourceTree = "<group>";
-		};
-		C97F0C421C0D823000915E64 /* testFilesystems */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = testFilesystems;
 			sourceTree = "<group>";
 		};
 		C9BA5B4E1BE159B400A761FC /* program3 */ = {
