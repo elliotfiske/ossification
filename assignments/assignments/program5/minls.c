@@ -194,7 +194,7 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
          if (block->magic != MINIX_MAGIC_NUMBER) {
             printf("Bad magic number. (%x)\n", block->magic);
             printf("This doesn't look like a MINIX filesystem.\n");
-            exit(EXIT_SUCCESS);
+            exit(EXIT_FAILURE);
          }
          if (vFlag == 1) {
             printSuperblock(block);
@@ -214,7 +214,7 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
          if (block->magic != MINIX_MAGIC_NUMBER) {
             printf("Bad magic number. (%x)\n", block->magic);
             printf("This doesn't look like a MINIX filesystem.\n");
-            exit(EXIT_SUCCESS);
+            exit(EXIT_FAILURE);
          }
          if (vFlag == 1) {
             printSuperblock(block);
