@@ -124,7 +124,7 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
    size_t readBytes = 0;
    
    if (!diskImage) {
-      perror("Disk image does not exist\n");
+      printf("Disk image does not exist\n");
       exit(EXIT_FAILURE);
    }
  
@@ -152,6 +152,7 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
       }
       else {
          printf("Not a Minix partition\n");
+         exit(EXIT_FAILURE);
       }
       
       if (spFlag == 1) {
@@ -172,6 +173,7 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
          
          if (readBytes != 1) {
             printf("Read subpartition error\n");
+            exit(EXIT_FAILURE);
          }
          
          /* Ensure it is a Minix partition */
@@ -228,15 +230,15 @@ struct inode* findInodeFile(FILE *imageFile, int inode,
    fseek(imageFile, offsetToInodes + offset, SEEK_SET);
  
    readBytes = fread(node, sizeof(struct inode), 1, imageFile);
-   
+
    if (readBytes == 1) {
       if (vFlag == 1) {
          printInode(node);
       }
-      
    }
    else {
-      fprintf(stderr, "iNode read failed\n");
+      perror("iNode read failed\n");
+      exit(EXIT_FAILURE);
    }
  
    return node;
