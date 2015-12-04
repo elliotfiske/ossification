@@ -356,7 +356,7 @@ void printDirectory(FILE *imageFile, struct directory_entry *entry,
   struct superblock *block) {
    int i;
    struct inode *node;
-   printf("%s\n", originalFileName);
+   printf("%s", originalFileName);
    
    for (i = 0; i < numOfDirectories; i++) {
       node = findInodeFile(imageFile, entry[i].inode, block, 0);
