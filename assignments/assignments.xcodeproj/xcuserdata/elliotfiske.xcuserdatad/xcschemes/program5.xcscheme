@@ -63,19 +63,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-p 0"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-s 2"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "TestImage"
+            argument = "-p0"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "Hello"
+            argument = "Partitioned"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

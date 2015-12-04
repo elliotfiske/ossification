@@ -495,15 +495,13 @@ int main(int argc, char **argv) {
       if (!strcmp(argv[i], "-v")) {
          vFlag = 1;
       }
-      else if (!strcmp(argv[i], "-p")){
-         i++;
-         partition = atoi(argv[i]);
+      else if (argv[i][0] == '-' && argv[i][1] == 'p') {
+         partition = atoi(argv[i]+2);
          
          pFlag = 1;
       }
-      else if (!strcmp(argv[i], "-s")){
-         i++;
-         subpartition = atoi(argv[i]);
+      else if (argv[i][0] == '-' && argv[i][1] == 's') {
+         subpartition = atoi(argv[i]+2);
          
          spFlag = 1;
       }
