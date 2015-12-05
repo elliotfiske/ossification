@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>my_program5.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>6</integer>
+		</dict>
 		<key>program1-dumb.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -60,6 +65,11 @@
 			<true/>
 		</dict>
 		<key>C9BA5B4C1BE159B400A761FC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>C9E27FE91C12759B00344977</key>
 		<dict>
 			<key>primary</key>
 			<true/>

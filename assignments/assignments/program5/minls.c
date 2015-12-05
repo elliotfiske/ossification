@@ -47,10 +47,10 @@ char printGetOut = 0;
 
 
 struct superblock { /* Minix Version 3 Superblock
-   * this structure found in fs/super.h
-   * in minix 3.1.1
-   */
-   /* on disk. These fields and orientation are non–negotiable */
+                     * this structure found in fs/super.h
+                     * in minix 3.1.1
+                     */
+   /* ~~ON DISK~~ These fields and orientation are non–negotiable */
    uint32_t ninodes; /* number of inodes in this filesystem */
    uint16_t pad1; /* make things line up properly */
    int16_t i_blocks; /* # of blocks used by inode bit map */
@@ -214,7 +214,7 @@ FILE *initialize(struct superblock *block, int partition, int subpartition,
          if (block->magic != MINIX_MAGIC_NUMBER) {
             printf("Bad magic number. (%x)\n", block->magic);
             printf("This doesn't look like a MINIX filesystem.\n");
-            exit(256);
+            exit(EXIT_FAILURE);
          }
          if (vFlag == 1) {
             printSuperblock(block);
