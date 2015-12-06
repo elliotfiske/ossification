@@ -350,6 +350,7 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
    inode_t *curr_inode = NULL;
    directory_entry_t *curr_entries = NULL;
    int num_files_in_directory = 0;
+   int ndx;
    directory_entry_t *single_entry;
    char *token;
    char strtok_path[MAX_PATH_LENGTH]; /* Make a copy of path b/c strtok mangles
@@ -378,7 +379,7 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
       /* Check all the directory entries for the right name */
       single_entry = curr_entries;
       found_path = 0;
-      while (single_entry != NULL) {
+      for (ndx = 0; ndx < num_files_in_directory; ndx++) {
          if (strcmp(token, (const char *) single_entry->name) == 0) {
             curr_inode_num = single_entry->inode_num;
             found_path = 1;

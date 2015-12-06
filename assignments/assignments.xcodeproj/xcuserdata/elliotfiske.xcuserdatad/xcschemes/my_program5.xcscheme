@@ -64,7 +64,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-p2"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-v"
@@ -72,14 +72,15 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-s0"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "BrokenStuff"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "BigZones-16k"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "Dirone"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
