@@ -87,7 +87,7 @@ void list_contents_of_inode(inode_t *inode, char *path, FILE *image_file,
    else if ((inode->mode & FILE_TYPE_MASK) == REGULAR_FILE) {
       print_permission_string(inode->mode);
       printf("%10lu", (unsigned long)inode->size);
-      printf(" /%s\n", file_name);
+      printf(" %s\n", path);
    }
    else {
       printf("Given file's mode is 0x%x, and isn't a file OR a directory.\n",
