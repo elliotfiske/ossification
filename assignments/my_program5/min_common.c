@@ -55,7 +55,7 @@ FILE *parse_arguments(int argc, char *argv[],
       }
    }
    
-   my_printf("vflag = %d, partnum = %d, subpartnum = %d\n",
+   d_printf(common_verbose_flag, "vflag = %d, partnum = %d, subpartnum = %d\n",
             *verbose_flag, *partition_num, *subpartition_num);
    
    /* Copy string arguments */
@@ -216,8 +216,8 @@ int directory_entries_from_inode(inode_t *inode, FILE *image_file,
                                  directory_entry_t **result) {
    directory_entry_t *entries = calloc(MAX_DIRECTORY_ENTRIES,
                                        DIRECTORY_ENTRY_SIZE_BYTES);
-   void *curr_entry_pointer = entries; /* Copy entries one at a time with this
-                                        * pointer. */
+   char *curr_entry_pointer = (char *) entries; /* Copy entries one at a time
+                                                 * with this pointer. */
    
    uint32_t total_read = 0;
    uint32_t zone_size = superblock.blocksize << superblock.log_zone_size;
