@@ -64,23 +64,23 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-p0"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-s0"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "HardDisk"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "Hello"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "hi"
-            isEnabled = "NO">
+            argument = "Files"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Files/0010_Zones"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "10_out"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

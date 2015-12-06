@@ -32,6 +32,42 @@ void write_zeroes(int out_fd, size_t how_many) {
    }
 }
 
+void handle_indirect_zone(uint32_t zone_size, FILE *image_file,
+                          inode_t *file_inode, int total_read,
+                          int out_file_descriptor) {
+   uint32_t *indirect_zone = malloc(zone_size);
+   size_t read_bytes;
+   char *file_data = malloc(zone_size);
+   
+   int indirect_ndx;
+   
+   fseek(image_file, file_inode->indirect * zone_size + base_offset, SEEK_SET);
+   read_bytes = fread(indirect_zone, 1, zone_size, image_file);
+   
+   for (indirect_ndx = 0;
+        indirect_ndx < zone_size / ZONE_INDEX_BYTES; indirect_ndx++) {
+      if (total_read >= file_inode->size) {
+         break;
+      }
+      
+      if (indirect_zone[indirect_ndx] == 0) {
+         write_zeroes(out_file_descriptor, zone_size);
+         total_read += zone_size;
+      }
+      else {
+         fseek(image_file, indirect_zone[indirect_ndx] * zone_size
+               + base_offset, SEEK_SET);
+         read_bytes = fread(file_data, 1,
+                            MIN(zone_size, file_inode->size - total_read),
+                            image_file);
+         
+         write(out_file_descriptor, file_data, read_bytes);
+         
+         total_read += read_bytes;
+      }
+   }
+}
+
 void output_file_contents(char *out_filename, inode_t *file_inode,
                           FILE *image_file, superblock_t superblock) {
    uint32_t zone_size = superblock.blocksize << superblock.log_zone_size;
@@ -58,7 +94,7 @@ void output_file_contents(char *out_filename, inode_t *file_inode,
       exit(EXIT_FAILURE);
    }
    
-   while (total_read < file_inode->size && i < 7) {
+   while (total_read < file_inode->size && i < DIRECT_ZONES) {
       if (file_inode->zone[i] == 0) {
          write_zeroes(out_file_descriptor, zone_size);
          
@@ -78,6 +114,12 @@ void output_file_contents(char *out_filename, inode_t *file_inode,
          total_read += read_bytes;
          i++;
       }
+   }
+   
+   /* Indirect zone */
+   if (total_read < file_inode->size) {
+      handle_indirect_zone(zone_size, image_file, file_inode, total_read,
+                           out_file_descriptor);
    }
 }
 
