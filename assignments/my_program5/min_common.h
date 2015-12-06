@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <libgen.h>
 
 /** Reasonable size for one filename */
@@ -19,11 +20,15 @@
 #define MAX_PATH_LENGTH 32768
 
 /** Only print if -v is around */
-#define d_printf(...) if (verbose_flag) { printf( __VA_ARGS__); }
-
-/** Prints for JUST ME :3 */
-#define ELLIOT_DEBUG 1
-#define my_printf(...) if (ELLIOT_DEBUG) { printf( __VA_ARGS__); }
+void d_printf(int vflag, const char *format, ...) {
+   va_list args;
+   va_start(args, format);
+   
+   if(vflag)
+      vprintf(format, args);
+   
+   va_end(args);
+}
 
 /********************************************************************/
 /************************ FUN MINIX STRUCTS *************************/
