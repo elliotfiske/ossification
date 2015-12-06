@@ -109,7 +109,7 @@ uint32_t get_partition_offset(int partition_num, int subpartition_num,
    uint32_t partition_sig_1 = 0, partition_sig_2 = 0;
    size_t bytes_read;
    
-   uint32_t result;
+   uint32_t result = 0;
    
    partition_entry_t partition_entry;
    
@@ -209,7 +209,7 @@ superblock_t parse_superblock(uint32_t base_offset, FILE *image_file) {
    if (result.magic != MINIX_MAGIC_NUMBER) {
       printf("Bad magic number. (0x%x)\n", result.magic);
       printf("This doesn't look like a MINIX filesystem.\n");
-      exit(EXIT_SUCCESS);
+      exit(EXIT_FAILURE);
    }
    
    if (common_verbose_flag) {
