@@ -99,8 +99,8 @@ typedef struct directory_entry {
 
 typedef struct path_list_entry {
    char *path;
-   
-} path_list_entry;
+   struct path_list_entry *next_entry;
+} path_list_entry_t;
 
 /*** 
  

@@ -235,8 +235,22 @@ inode_t *inode_from_inode_num(int32_t inode_num, superblock_t superblock,
 inode_t get_inode_from_path(char *path, superblock_t superblock,
                             uint32_t base_offset, FILE *image_file) {
    inode_t result;
+   char curr_dir[ARG_LENGTH];
    
+   path_list_entry_t *path_root = malloc(sizeof(path_list_entry_t));
+   path_root->next_entry = NULL;
+   path_root->path = "";
    
+   /** Shaves off last entry */
+   strcpy(curr_dir, dirname(path));
+   
+   while (strcmp(curr_dir, ".") != 0 &&
+          strcmp(curr_dir, "/") != 0     ) {
+      strcpy(curr_dir, dirname(path));
+      path_root = malloc(sizeof(path_list_entry_t));
+      strcpy(path_root->path
+      
+   }
    
    return result;
 }

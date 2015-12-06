@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
    char *search_path = "";
    char *output_path; /* Not used for minls */
    
-   char *test_path = "/lets/do/this/now/OK!! ";
+   char *test_path = "lets/do";
    char *base = basename(test_path);
    char *dir = dirname(test_path);
    printf("extracted basename: %s\n", base);
