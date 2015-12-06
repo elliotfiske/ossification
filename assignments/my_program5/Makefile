@@ -15,3 +15,5 @@ minget: minget.o min_common.o
 minls: minls.o min_common.o
 	gcc -g -o minls minls.o min_common.o
 
+clean:
+	rm -f *.o minget minls
