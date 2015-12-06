@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "my_program5/min_common.c"
-            timestampString = "471077442.776051"
+            timestampString = "471077665.555876"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "395"
-            endingLineNumber = "395"
+            startingLineNumber = "371"
+            endingLineNumber = "371"
             landmarkName = "get_inode_from_path()"
             landmarkType = "7">
          </BreakpointContent>
@@ -58,11 +58,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "my_program5/min_common.c"
-            timestampString = "471076847.993838"
+            timestampString = "471077665.555876"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "319"
-            endingLineNumber = "319"
+            startingLineNumber = "293"
+            endingLineNumber = "293"
             landmarkName = "directory_entries_from_inode()"
             landmarkType = "7">
          </BreakpointContent>
@@ -74,11 +74,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "my_program5/min_common.c"
-            timestampString = "471077136.585682"
+            timestampString = "471077665.555876"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "331"
-            endingLineNumber = "331"
+            startingLineNumber = "305"
+            endingLineNumber = "305"
             landmarkName = "directory_entries_from_inode()"
             landmarkType = "7">
          </BreakpointContent>
@@ -86,15 +86,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "my_program5/min_common.c"
-            timestampString = "471077489.1724"
+            timestampString = "471077665.555876"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "335"
-            endingLineNumber = "335"
+            startingLineNumber = "309"
+            endingLineNumber = "309"
             landmarkName = "directory_entries_from_inode()"
             landmarkType = "7">
          </BreakpointContent>
