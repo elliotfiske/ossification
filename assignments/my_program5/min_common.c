@@ -139,30 +139,6 @@ void printInode(struct inode *node) {
    fprintf(stderr, "  uint32_t unused %d\n", node->unused);
 }
 
-/** Given a file mode from the inode, print the permission string like
- "drw-rwx-w-" or whatever. */
-void printPermissionString(uint16_t fileMode) {
-   char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
-   
-   char owner_read  = ((fileMode & OWNER_READ_PERMISSION))       ? 'r' : '-';
-   char owner_write = ((fileMode & OWNER_WRITE_PERMISSION))      ? 'w' : '-';
-   char owner_exec  = ((fileMode & OWNER_EXECUTE_PERMISSION))    ? 'x' : '-';
-   
-   char group_read =  ((fileMode & GROUP_READ_PERMISSION))       ? 'r' : '-';
-   char group_write = ((fileMode & GROUP_WRITE_PERMISSION))      ? 'w' : '-';
-   char group_exec  = ((fileMode & GROUP_EXECUTE_PERMISSION))    ? 'x' : '-';
-   
-   char other_read =  ((fileMode & OTHER_READ_PERMISSION))       ? 'r' : '-';
-   char other_write = ((fileMode & OTHER_WRITE_PERMISSION))      ? 'w' : '-';
-   char other_exec  = ((fileMode & OTHER_EXECUTE_PERMISSION))    ? 'x' : '-';
-   
-   printf("%c%c%c%c%c%c%c%c%c%c",
-          dir,
-          owner_read, owner_write, owner_exec,
-          group_read, group_write, group_exec,
-          other_read, other_write, other_exec  );
-}
-
 /**
  * Get the superblock info
  */
@@ -228,29 +204,116 @@ inode_t *inode_from_inode_num(int32_t inode_num, superblock_t superblock,
 }
 
 /**
+ * Take an inode and populate the list of directory entries it contains
+ *
+ * exits if the inode isn't a directory
+ *
+ * Returns # of files in this directory
+ */
+int directory_entries_from_inode(inode_t *inode, FILE *image_file,
+                                 superblock_t superblock, uint32_t base_offset,
+                                 directory_entry_t **result) {
+   directory_entry_t *entries = calloc(MAX_DIRECTORY_ENTRIES,
+                                       DIRECTORY_ENTRY_SIZE_BYTES);
+   void *curr_entry_pointer = entries; /* Copy entries one at a time with this
+                                        * pointer. */
+   
+   uint32_t total_read = 0;
+   uint32_t zone_size = superblock.blocksize << superblock.log_zone_size;
+   size_t read_bytes;
+   int i = 0;
+   
+   *result = NULL;
+   
+   if ((inode->mode & FILE_TYPE_MASK) != DIRECTORY) {
+      printf("That's not a directory!");
+      return 0;
+   }
+   
+   while (total_read < inode->size && i < 7) {
+      fseek(image_file, inode->zone[i] * zone_size + base_offset, SEEK_SET);
+      read_bytes = fread(curr_entry_pointer, 1, zone_size, image_file);
+      
+      if (read_bytes == zone_size) {
+         curr_entry_pointer += zone_size;
+         total_read += zone_size;
+         i++;
+      }
+      else {
+         printf("Read zones failed\n");
+         exit(EXIT_FAILURE);
+      }
+   }
+   
+   *result = entries;
+   
+   return inode->size / DIRECTORY_ENTRY_SIZE_BYTES;
+}
+
+/**
  * Given a pathname, go down the path and return the inode we want
  *
  * (Could be a directory or a file)
  */
-inode_t get_inode_from_path(char *path, superblock_t superblock,
-                            uint32_t base_offset, FILE *image_file) {
-   inode_t result;
-   char curr_dir[ARG_LENGTH];
+inode_t *get_inode_from_path(char *path, superblock_t superblock,
+                             uint32_t base_offset, FILE *image_file) {
+   inode_t *curr_inode = NULL;
+   directory_entry_t *curr_entries = NULL;
+   int num_files_in_directory = 0;
+   directory_entry_t *single_entry;
+   char *token;
+   char strtok_path[MAX_PATH_LENGTH]; /* Make a copy of path b/c strtok mangles
+                                       * strings */
    
-   path_list_entry_t *path_root = malloc(sizeof(path_list_entry_t));
-   path_root->next_entry = NULL;
-   path_root->path = "";
+   uint32_t curr_inode_num = 1;
+   int found_path = 0;
    
-   /** Shaves off last entry */
-   strcpy(curr_dir, dirname(path));
+   strcpy(strtok_path, path);
+   token = strtok(strtok_path, "/");
    
-   while (strcmp(curr_dir, ".") != 0 &&
-          strcmp(curr_dir, "/") != 0     ) {
-      strcpy(curr_dir, dirname(path));
-      path_root = malloc(sizeof(path_list_entry_t));
-      strcpy(path_root->path
+   while (token != NULL) {
+      printf("Path: %s\n", token);
       
+      curr_inode = inode_from_inode_num(curr_inode_num, superblock,
+                                        base_offset, image_file);
+      
+      num_files_in_directory = directory_entries_from_inode(curr_inode,
+                                                            image_file,
+                                                            superblock,
+                                                            base_offset,
+                                                            &curr_entries);
+      
+      /* Check all the directory entries for the right name */
+      single_entry = curr_entries;
+      found_path = 0;
+      while (single_entry != NULL) {
+         if (strcmp(token, (const char *) single_entry->name) == 0) {
+            curr_inode_num = single_entry->inode_num;
+            found_path = 1;
+            break;
+         }
+         
+         single_entry++;
+      }
+      
+      token = strtok(NULL, "/");
+      
+      /* User specified non-existent file */
+      if (!found_path) {
+         printf("minls: %s: No such file or directory\n", path);
+         exit(EXIT_FAILURE);
+      }
+      
+      /* User tried to navigate through a file as if it was a directory */
+      if (curr_entries == NULL && token != NULL) {
+         printf("minls: %s: No such file or directory\n", path);
+         exit(EXIT_FAILURE);
+      }
+      
+      if (curr_entries != NULL) {
+         free(curr_entries);
+      }
    }
    
-   return result;
+   return curr_inode;
 }

@@ -15,6 +15,8 @@
 
 /** Reasonable size for one filename */
 #define ARG_LENGTH 100
+/** Max length for path */
+#define MAX_PATH_LENGTH 32768
 
 /** Only print if -v is around */
 #define d_printf(...) if (verbose_flag) { printf( __VA_ARGS__); }
@@ -50,6 +52,9 @@ typedef struct superblock { /* Minix Version 3 Superblock
 } __attribute__ ((__packed__)) superblock_t;
 
 #define DIRECT_ZONES 7
+#define MAX_DIRECTORY_ENTRIES 512
+#define DIRECTORY_ENTRY_SIZE_BYTES 64
+
 typedef struct inode {
    uint16_t mode; /* mode */
    uint16_t links; /* number or links */
@@ -97,11 +102,6 @@ typedef struct directory_entry {
    unsigned char name[60];
 } directory_entry_t;
 
-typedef struct path_list_entry {
-   char *path;
-   struct path_list_entry *next_entry;
-} path_list_entry_t;
-
 /*** 
  
  EXPORTED METHODS
@@ -121,8 +121,8 @@ superblock_t parse_superblock(uint32_t base_offset, FILE *image_file);
 inode_t *inode_from_inode_num(int32_t inode_num, superblock_t superblock,
                               uint32_t base_offset, FILE *image_file);
 
-inode_t get_inode_from_path(char *path, superblock_t superblock,
-                            uint32_t base_offset, FILE *image_file);
+inode_t *get_inode_from_path(char *path, superblock_t superblock,
+                             uint32_t base_offset, FILE *image_file);
 
 
 #endif /* min_common_h */
