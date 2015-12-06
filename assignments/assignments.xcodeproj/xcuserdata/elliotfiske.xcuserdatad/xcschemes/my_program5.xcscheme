@@ -75,11 +75,11 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "TestImage"
+            argument = "BigIndirectDirs"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "Hello"
+            argument = "Level1/Level2"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

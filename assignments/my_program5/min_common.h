@@ -59,8 +59,12 @@ typedef struct superblock { /* Minix Version 3 Superblock
 } __attribute__ ((__packed__)) superblock_t;
 
 #define DIRECT_ZONES 7
-#define MAX_DIRECTORY_ENTRIES 512
+#define MAX_DIRECTORY_ENTRIES 1024
 #define DIRECTORY_ENTRY_SIZE_BYTES 64
+#define INDIRECT_ZONE_INDEX 7
+#define DOUBLE_INDIRECT_ZONE_INDEX 8
+#define TOTAL_ZONE_INDICES 9
+#define ZONE_INDEX_BYTES 4
 
 typedef struct inode {
    uint16_t mode; /* mode */

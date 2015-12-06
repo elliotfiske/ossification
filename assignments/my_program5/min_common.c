@@ -255,6 +255,32 @@ inode_t *inode_from_inode_num(int32_t inode_num, superblock_t superblock,
    return node;
 }
 
+//void handle_indirect_zone(FILE *image_file, inode_t *inode,
+//                          superblock_t superblock, uint32_t base_offset,
+//                          directory_entry_t **result) {
+//   uint32_t zone_size = superblock.blocksize << superblock.log_zone_size;
+//   
+//   fseek(image_file, inode->zone[i] * zone_size + base_offset, SEEK_SET);
+//   read_bytes = fread(indirect_zone, 1, zone_size, image_file);
+//   
+//   for (indirect_ndx = 0;
+//        indirect_ndx < zone_size / ZONE_INDEX_BYTES; indirect_ndx++) {
+//      fseek(image_file, indirect_zone[indirect_ndx] * zone_size + base_offset, SEEK_SET);
+//      read_bytes = fread(curr_entry_pointer, 1,
+//                         zone_size, image_file);
+//      
+//      if (read_bytes != -1) {
+//         curr_entry_pointer += zone_size;
+//         total_read += zone_size;
+//         i++;
+//      }
+//      else {
+//         printf("Read indirect zones failed\n");
+//         exit(EXIT_FAILURE);
+//      }
+//   }
+//}
+
 /**
  * Take an inode and populate the list of directory entries it contains
  *
@@ -274,21 +300,56 @@ int directory_entries_from_inode(inode_t *inode, FILE *image_file,
    uint32_t zone_size = superblock.blocksize << superblock.log_zone_size;
    size_t read_bytes;
    int i = 0;
+   int indirect_ndx;
+   
+   uint32_t *indirect_zone = malloc(zone_size);
    
    *result = NULL;
    
    if ((inode->mode & FILE_TYPE_MASK) != DIRECTORY) {
-      printf("That's not a directory!");
+      printf("That's not a directory!\n");
       return 0;
    }
    
-   while (total_read < inode->size && i < 7) {
+   while (total_read < inode->size && i < TOTAL_ZONE_INDICES) {
+      if (i == INDIRECT_ZONE_INDEX) {
+         fseek(image_file, inode->indirect * zone_size + base_offset, SEEK_SET);
+         read_bytes = fread(indirect_zone, 1, zone_size, image_file);
+         
+         for (indirect_ndx = 0;
+              indirect_ndx < zone_size / ZONE_INDEX_BYTES; indirect_ndx++) {
+            fseek(image_file, indirect_zone[indirect_ndx] * zone_size +
+                  base_offset, SEEK_SET);
+            read_bytes = fread(curr_entry_pointer, 1,
+                               zone_size, image_file);
+            
+            if (read_bytes > 0) {
+               curr_entry_pointer += zone_size;
+               total_read += read_bytes;
+               
+               if (total_read >= inode->size) {
+                  break;
+               }
+            }
+            else {
+               printf("Read indirect zones failed\n");
+               exit(EXIT_FAILURE);
+            }
+         }
+         
+         i++;
+         continue;
+      }
+      else if (i == DOUBLE_INDIRECT_ZONE_INDEX) {
+         
+      }
+      
       fseek(image_file, inode->zone[i] * zone_size + base_offset, SEEK_SET);
       read_bytes = fread(curr_entry_pointer, 1, zone_size, image_file);
       
-      if (read_bytes == zone_size) {
+      if (read_bytes > 0) {
          curr_entry_pointer += zone_size;
-         total_read += zone_size;
+         total_read += read_bytes;
          i++;
       }
       else {
