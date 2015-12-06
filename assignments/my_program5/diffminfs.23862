@@ -1,0 +1,5 @@
+1c1,2
+< -rwxr-xr-x       181 /Permissions/755
+---
+> Bad magic number. (0x0)
+> This doesn't look like a MINIX filesystem.
