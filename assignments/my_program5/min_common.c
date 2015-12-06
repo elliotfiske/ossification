@@ -12,6 +12,7 @@
 #include "min_common.h"
 
 #include <ctype.h>
+#include <getopt.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
