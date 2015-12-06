@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <fcntl.h>
 
 uint32_t base_offset;
 superblock_t superblock;
@@ -29,13 +30,13 @@ void output_file_contents(char *out_filename, inode_t *file_inode,
    
    char *file_data = malloc(zone_size);
    
-   FILE *out_file = stdout;
+   int out_file_descriptor = STDOUT_FILENO;
    
    if (strlen(out_filename) > 0) {
-      out_file = fopen(out_filename, "w");
+      out_file_descriptor = open(out_filename, O_CREAT | O_TRUNC | O_WRONLY);
    }
    
-   if (out_filename == NULL) {
+   if (out_file_descriptor == -1) {
       perror(out_filename);
       exit(EXIT_FAILURE);
    }
@@ -47,7 +48,7 @@ void output_file_contents(char *out_filename, inode_t *file_inode,
                          MIN(zone_size, file_inode->size - total_read),
                          image_file);
       
-      write(fileno(out_file), file_data, read_bytes);
+      write(out_file_descriptor, file_data, read_bytes);
       
       total_read += zone_size;
       i++;
