@@ -19,7 +19,8 @@ int verbose_flag = 0;
 int partition_num = -1;
 int subpartition_num = -1;
 
-void output_file_contents(char *out_filename, inode_t *file_inode, FILE *image_file, superblock_t superblock) {
+void output_file_contents(char *out_filename, inode_t *file_inode,
+                          FILE *image_file, superblock_t superblock) {
    uint32_t zone_size = superblock.blocksize << superblock.log_zone_size;
    uint32_t total_read = 0;
    size_t read_bytes;
@@ -39,7 +40,8 @@ void output_file_contents(char *out_filename, inode_t *file_inode, FILE *image_f
    }
    
    while (total_read < file_inode->size && i < 7) {
-      fseek(image_file, file_inode->zone[i] * zone_size + base_offset, SEEK_SET);
+      fseek(image_file, file_inode->zone[i] * zone_size +
+            base_offset, SEEK_SET);
       read_bytes = fread(file_data, 1, zone_size, image_file);
       
       write(fileno(out_file), file_data, read_bytes);
