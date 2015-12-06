@@ -75,12 +75,12 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "BlankDisk"
+            argument = "TestImage"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "src/"
-            isEnabled = "NO">
+            argument = "Hello"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

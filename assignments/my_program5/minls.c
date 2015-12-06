@@ -78,13 +78,16 @@ void print_directory(FILE *image_file, superblock_t superblock,
  * list its permissions.
  */
 void list_contents_of_inode(inode_t *inode, char *path, FILE *image_file,
-                            superblock_t superblock, uint32_t base_offset) {
+                            superblock_t superblock, uint32_t base_offset,
+                            char *file_name) {
    if ((inode->mode & FILE_TYPE_MASK) == DIRECTORY) {
       printf("%s:\n", path);
       print_directory(image_file, superblock, base_offset, inode);
    }
    else if ((inode->mode & FILE_TYPE_MASK) == REGULAR_FILE) {
-      
+      print_permission_string(inode->mode);
+      printf("%10lu", (unsigned long)inode->size);
+      printf(" %s\n", file_name);
    }
    else {
       printf("Given file's mode is 0x%x, and isn't a file OR a directory.\n",
@@ -96,6 +99,7 @@ int main(int argc, char *argv[]) {
    FILE *image_file;
    
    char *search_path = "/";
+   char *file_name;
    char *output_path; /* Not used for minls */
    
    /** The inode of whatever directory / file the user asked for */
@@ -111,11 +115,10 @@ int main(int argc, char *argv[]) {
    superblock = parse_superblock(base_offset, image_file);
    
    specified_inode = get_inode_from_path(search_path, superblock,
-                                         base_offset, image_file);
-   
+                                         base_offset, image_file, &file_name);
    
    list_contents_of_inode(specified_inode, search_path, image_file,
-                          superblock, base_offset);
+                          superblock, base_offset, file_name);
    
    return 0;
 }

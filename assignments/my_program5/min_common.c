@@ -308,7 +308,8 @@ int directory_entries_from_inode(inode_t *inode, FILE *image_file,
  * (Could be a directory or a file)
  */
 inode_t *get_inode_from_path(char *path, superblock_t superblock,
-                             uint32_t base_offset, FILE *image_file) {
+                             uint32_t base_offset, FILE *image_file,
+                             char **file_name) {
    inode_t *curr_inode = NULL;
    directory_entry_t *curr_entries = NULL;
    int num_files_in_directory = 0;
@@ -324,14 +325,13 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
       path = ".";
    }
    
-   
    strcpy(strtok_path, path);
    token = strtok(strtok_path, "/");
    
+   curr_inode = inode_from_inode_num(curr_inode_num, superblock,
+                                     base_offset, image_file);
+   
    while (token != NULL) {
-      curr_inode = inode_from_inode_num(curr_inode_num, superblock,
-                                        base_offset, image_file);
-      
       num_files_in_directory = directory_entries_from_inode(curr_inode,
                                                             image_file,
                                                             superblock,
@@ -345,6 +345,7 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
          if (strcmp(token, (const char *) single_entry->name) == 0) {
             curr_inode_num = single_entry->inode_num;
             found_path = 1;
+            *file_name = token;
             break;
          }
          
@@ -368,6 +369,9 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
       if (curr_entries != NULL) {
          free(curr_entries);
       }
+      
+      curr_inode = inode_from_inode_num(curr_inode_num, superblock,
+                                        base_offset, image_file);
    }
    
    return curr_inode;

@@ -132,7 +132,8 @@ int directory_entries_from_inode(inode_t *inode, FILE *image_file,
                                  directory_entry_t **result);
 
 inode_t *get_inode_from_path(char *path, superblock_t superblock,
-                             uint32_t base_offset, FILE *image_file);
+                             uint32_t base_offset, FILE *image_file,
+                             char **file_name);
 
 
 #endif /* min_common_h */
