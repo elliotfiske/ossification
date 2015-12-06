@@ -31,7 +31,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "28"
             endingLineNumber = "28"
-            landmarkName = "main()"
+            landmarkName = "printPermissionString()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -80,22 +80,6 @@
             startingLineNumber = "323"
             endingLineNumber = "323"
             landmarkName = "get_inode_from_path()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "my_program5/minls.c"
-            timestampString = "471061719.550377"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "55"
-            endingLineNumber = "55"
-            landmarkName = "printDirectory()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
