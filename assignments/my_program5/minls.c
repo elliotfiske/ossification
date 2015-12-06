@@ -49,18 +49,18 @@ void print_directory(FILE *imageFile, struct directory_entry *entry,
                      int numOfDirectories, struct superblock *block,
                      uint32_t base_offset) {
    int i;
-//   struct inode *node;
+/*  struct inode *node;
 //   printf("%s\n", originalFileName);
 //   
 //   for (i = 0; i < numOfDirectories; i++) {
 //      node = findInodeFile(imageFile, entry[i].inode, block, 0);
 //      
-//      if (entry[i].inode != 0) { /* Don't print deleted files */
+//      if (entry[i].inode != 0) { /* Don't print deleted files 
 //         printPermissionString(node->mode);
 //         printf("%10lu", (unsigned long)node->size);
 //         printf(" %s\n", entry[i].name);
 //      }
-//   }
+   } */
 }
 
 /**
