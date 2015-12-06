@@ -32,6 +32,12 @@ void output_file_contents(char *out_filename, inode_t *file_inode,
    
    int out_file_descriptor = STDOUT_FILENO;
    
+   /* Check that it's not a directory */
+   if ((file_inode->mode & FILE_TYPE_MASK) != REGULAR_FILE) {
+      printf("Can't call minget on a directory\n");
+      exit(EXIT_FAILURE);
+   }
+   
    if (strlen(out_filename) > 0) {
       out_file_descriptor = open(out_filename, O_CREAT | O_TRUNC | O_WRONLY);
    }
@@ -58,8 +64,8 @@ void output_file_contents(char *out_filename, inode_t *file_inode,
 int main(int argc, char *argv[]) {
    FILE *image_file;
    
-   char *search_path = "/";
-   char *file_name;
+   char *search_path = "";
+   char *file_name = "";
    char *output_path = "";
    
    /** The inode of whatever directory / file the user asked for */
@@ -68,6 +74,12 @@ int main(int argc, char *argv[]) {
    image_file = parse_arguments(argc, argv, &verbose_flag,
                                 &partition_num, &subpartition_num,
                                 &search_path, &output_path);
+   
+   if (strlen(search_path) == 0) {
+      printf("Please specify a file to get, like:\
+              %s <Image File> <File Name>\n", argv[0]);
+      exit(EXIT_FAILURE);
+   }
    
    base_offset = get_partition_offset(partition_num, subpartition_num,
                                       image_file, 0);
