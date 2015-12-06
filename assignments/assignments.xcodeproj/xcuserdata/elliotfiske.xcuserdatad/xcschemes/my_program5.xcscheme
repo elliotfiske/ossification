@@ -75,11 +75,11 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "BigIndirectDirs"
+            argument = "Files"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "Level1/Level2"
+            argument = "/Deleted/File-05"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

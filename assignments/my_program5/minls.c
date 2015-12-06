@@ -92,6 +92,7 @@ void list_contents_of_inode(inode_t *inode, char *path, FILE *image_file,
    else {
       printf("Given file's mode is 0x%x, and isn't a file OR a directory.\n",
              inode->mode);
+      exit(EXIT_FAILURE);
    }
 }
 
