@@ -75,11 +75,11 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Files/0010_Zones"
+            argument = "/Files/1032_Zones"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "10_out"
+            argument = "1032_out"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
