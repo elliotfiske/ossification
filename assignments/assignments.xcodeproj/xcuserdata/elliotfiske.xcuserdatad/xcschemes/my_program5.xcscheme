@@ -63,24 +63,23 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-p0"
-            isEnabled = "NO">
+            argument = "-p2"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-v"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-s2"
+            argument = "-s0"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "BrokenStuff"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "Files"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Deleted/File-05"
-            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

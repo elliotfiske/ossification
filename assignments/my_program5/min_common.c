@@ -115,12 +115,12 @@ uint32_t get_partition_offset(int partition_num, int subpartition_num,
    
    if (partition_num != -1) {
       /* Check partition table magic # */
-      fseek(image_file, VALID_PARTITION_CHECK, SEEK_SET);
+      fseek(image_file, VALID_PARTITION_CHECK + subpartition_offset, SEEK_SET);
       fread(&partition_sig_1, 1, 1, image_file);
       fread(&partition_sig_2, 1, 1, image_file);
       
       if (!(partition_sig_1 == BYTE510 && partition_sig_2 == BYTE511)) {
-         fprintf(stderr, "Not a valid partition table\n");
+         fprintf(stderr, "Invalid partition table\n");
          exit(EXIT_FAILURE);
       }
       
