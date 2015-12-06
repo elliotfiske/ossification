@@ -317,12 +317,13 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
    char strtok_path[MAX_PATH_LENGTH]; /* Make a copy of path b/c strtok mangles
                                        * strings */
    
+   uint32_t curr_inode_num = 1;
+   int found_path = 0;
+   
    if (strcmp(path, "/") == 0) { /* Handle blank path */
       path = ".";
    }
    
-   uint32_t curr_inode_num = 1;
-   int found_path = 0;
    
    strcpy(strtok_path, path);
    token = strtok(strtok_path, "/");
