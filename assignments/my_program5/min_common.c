@@ -20,6 +20,16 @@
 /** Verbose flag for THIS file (min_common.c) */
 int common_verbose_flag = 0;
 
+void d_printf(int vflag, const char *format, ...) {
+   va_list args;
+   va_start(args, format);
+   
+   if(vflag)
+      vprintf(format, args);
+   
+   va_end(args);
+}
+
 /**
  * Parse arguments, stick 'em in the places that I point to.
  * 

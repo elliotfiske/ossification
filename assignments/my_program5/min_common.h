@@ -20,15 +20,7 @@
 #define MAX_PATH_LENGTH 32768
 
 /** Only print if -v is around */
-void d_printf(int vflag, const char *format, ...) {
-   va_list args;
-   va_start(args, format);
-   
-   if(vflag)
-      vprintf(format, args);
-   
-   va_end(args);
-}
+void d_printf(int vflag, const char *format, ...);
 
 /********************************************************************/
 /************************ FUN MINIX STRUCTS *************************/
