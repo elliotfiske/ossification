@@ -209,7 +209,7 @@ superblock_t parse_superblock(uint32_t base_offset, FILE *image_file) {
    if (result.magic != MINIX_MAGIC_NUMBER) {
       printf("Bad magic number. (0x%x)\n", result.magic);
       printf("This doesn't look like a MINIX filesystem.\n");
-      exit(EXIT_FAILURE);
+      exit(EXIT_SUCCESS);
    }
    
    if (common_verbose_flag) {
