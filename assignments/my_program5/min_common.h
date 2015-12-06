@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <libgen.h>
+#include <stdlib.h>
 
 /** Reasonable size for one filename */
 #define ARG_LENGTH 100

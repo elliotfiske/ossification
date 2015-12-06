@@ -18,7 +18,6 @@
 		C9BA5B501BE159B400A761FC /* dining.c in Sources */ = {isa = PBXBuildFile; fileRef = C9BA5B4F1BE159B400A761FC /* dining.c */; };
 		C9E27FED1C12759B00344977 /* min_common.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FEC1C12759B00344977 /* min_common.c */; };
 		C9E27FF31C1287A200344977 /* minls.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FF21C1287A200344977 /* minls.c */; };
-		C9E27FFD1C13DF9500344977 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FFC1C13DF9500344977 /* main.c */; };
 		C9E280011C13DF9C00344977 /* minget.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FF41C1287B000344977 /* minget.c */; };
 		C9E280021C13DFA000344977 /* min_common.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FEC1C12759B00344977 /* min_common.c */; };
 /* End PBXBuildFile section */
@@ -131,7 +130,6 @@
 		C9E27FF21C1287A200344977 /* minls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = minls.c; sourceTree = "<group>"; };
 		C9E27FF41C1287B000344977 /* minget.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = minget.c; sourceTree = "<group>"; };
 		C9E27FFA1C13DF9500344977 /* program5_minget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program5_minget; sourceTree = BUILT_PRODUCTS_DIR; };
-		C9E27FFC1C13DF9500344977 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -305,7 +303,6 @@
 		C9E27FFB1C13DF9500344977 /* program5_minget */ = {
 			isa = PBXGroup;
 			children = (
-				C9E27FFC1C13DF9500344977 /* main.c */,
 			);
 			path = program5_minget;
 			sourceTree = "<group>";
@@ -546,7 +543,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9E280021C13DFA000344977 /* min_common.c in Sources */,
-				C9E27FFD1C13DF9500344977 /* main.c in Sources */,
 				C9E280011C13DF9C00344977 /* minget.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
