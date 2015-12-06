@@ -136,5 +136,6 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
                              uint32_t base_offset, FILE *image_file,
                              char **file_name);
 
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 
 #endif /* min_common_h */

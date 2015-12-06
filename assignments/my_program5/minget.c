@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 
 uint32_t base_offset;
 superblock_t superblock;
@@ -42,7 +43,8 @@ void output_file_contents(char *out_filename, inode_t *file_inode,
    while (total_read < file_inode->size && i < 7) {
       fseek(image_file, file_inode->zone[i] * zone_size +
             base_offset, SEEK_SET);
-      read_bytes = fread(file_data, 1, zone_size, image_file);
+      read_bytes = fread(file_data, 1,
+                         MIN(zone_size, file_inode->size - total_read), image_file);
       
       write(fileno(out_file), file_data, read_bytes);
       
