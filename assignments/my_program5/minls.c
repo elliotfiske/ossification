@@ -1,10 +1,10 @@
-//
+/*
 //  minls.c
 //  assignments
 //
 //  Created by Elliot Fiske on 12/4/15.
 //  Copyright © 2015 Elliot Fiske. All rights reserved.
-//
+*/
 
 #include "min_common.h"
 

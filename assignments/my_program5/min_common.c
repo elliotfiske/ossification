@@ -1,4 +1,4 @@
-//
+/*
 //  min_common.c
 //
 //  Stuff that both minget and minls need
@@ -7,7 +7,7 @@
 //
 //  Created by Elliot Fiske on 12/4/15.
 //  Copyright © 2015 Elliot Fiske. All rights reserved.
-//
+*/
 
 #include "min_common.h"
 
@@ -95,7 +95,7 @@ FILE *parse_arguments(int argc, char *argv[],
  */
 uint32_t get_partition_offset(int partition_num, int subpartition_num,
                               FILE *image_file) {
-   // TODO: me
+   /* TODO: me */
    return 0;
 }
 
