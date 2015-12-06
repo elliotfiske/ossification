@@ -283,8 +283,6 @@ inode_t *get_inode_from_path(char *path, superblock_t superblock,
    token = strtok(strtok_path, "/");
    
    while (token != NULL) {
-      printf("Path: %s\n", token);
-      
       curr_inode = inode_from_inode_num(curr_inode_num, superblock,
                                         base_offset, image_file);
       

@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C9E27FE91C12759B00344977"
-               BuildableName = "my_program5"
-               BlueprintName = "my_program5"
+               BlueprintIdentifier = "C9E27FF91C13DF9500344977"
+               BuildableName = "program5_minget"
+               BlueprintName = "program5_minget"
                ReferencedContainer = "container:assignments.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C9E27FE91C12759B00344977"
-            BuildableName = "my_program5"
-            BlueprintName = "my_program5"
+            BlueprintIdentifier = "C9E27FF91C13DF9500344977"
+            BuildableName = "program5_minget"
+            BlueprintName = "program5_minget"
             ReferencedContainer = "container:assignments.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -55,34 +55,12 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C9E27FE91C12759B00344977"
-            BuildableName = "my_program5"
-            BlueprintName = "my_program5"
+            BlueprintIdentifier = "C9E27FF91C13DF9500344977"
+            BuildableName = "program5_minget"
+            BlueprintName = "program5_minget"
             ReferencedContainer = "container:assignments.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <CommandLineArguments>
-         <CommandLineArgument
-            argument = "-p9"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-v"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-s3"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "TestImage"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "src/"
-            isEnabled = "YES">
-         </CommandLineArgument>
-      </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -96,9 +74,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C9E27FE91C12759B00344977"
-            BuildableName = "my_program5"
-            BlueprintName = "my_program5"
+            BlueprintIdentifier = "C9E27FF91C13DF9500344977"
+            BuildableName = "program5_minget"
+            BlueprintName = "program5_minget"
             ReferencedContainer = "container:assignments.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

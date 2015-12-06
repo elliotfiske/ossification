@@ -22,7 +22,7 @@ superblock_t superblock;
 
 /** Given a file mode from the inode, print the permission string like
  "drw-rwx-w-" or whatever. */
-void printPermissionString(uint16_t fileMode) {
+void print_permission_string(uint16_t fileMode) {
    char dir =         ((fileMode & FILE_TYPE_MASK) == DIRECTORY) ? 'd' : '-';
    
    char owner_read  = ((fileMode & OWNER_READ_PERMISSION))       ? 'r' : '-';
@@ -45,22 +45,30 @@ void printPermissionString(uint16_t fileMode) {
 }
 
 /* Prints the LS information for a directory */
-void print_directory(FILE *imageFile, struct directory_entry *entry,
-                     int numOfDirectories, struct superblock *block,
-                     uint32_t base_offset) {
-   int i;
-/*  struct inode *node;
-//   printf("%s\n", originalFileName);
-//   
-//   for (i = 0; i < numOfDirectories; i++) {
-//      node = findInodeFile(imageFile, entry[i].inode, block, 0);
-//      
-//      if (entry[i].inode != 0) { /* Don't print deleted files 
-//         printPermissionString(node->mode);
-//         printf("%10lu", (unsigned long)node->size);
-//         printf(" %s\n", entry[i].name);
-//      }
-   } */
+void print_directory(FILE *image_file, superblock_t superblock,
+                     uint32_t base_offset, inode_t *directory_inode) {
+   int ndx, num_files;
+   inode_t *node;
+   directory_entry_t *entries = NULL;
+   directory_entry_t *curr_entry;
+   
+   num_files = directory_entries_from_inode(directory_inode, image_file,
+                                            superblock, base_offset, &entries);
+   
+   curr_entry = entries;
+ 
+   for (ndx = 0; ndx < num_files; ndx++) {
+      if (curr_entry->inode_num != 0) { /* Don't print deleted files */
+         node = inode_from_inode_num(curr_entry->inode_num, superblock,
+                                     base_offset, image_file);
+      
+         print_permission_string(node->mode);
+         printf("%10lu", (unsigned long)node->size);
+         printf(" %s\n", curr_entry->name);
+      }
+      
+      curr_entry ++;
+   }
 }
 
 /**
@@ -69,9 +77,11 @@ void print_directory(FILE *imageFile, struct directory_entry *entry,
  * If it's a directory, list its content. If it's a file,
  * list its permissions.
  */
-void list_contents_of_inode(inode_t *inode) {
+void list_contents_of_inode(inode_t *inode, char *path, FILE *image_file,
+                            superblock_t superblock, uint32_t base_offset) {
    if ((inode->mode & FILE_TYPE_MASK) == DIRECTORY) {
-      
+      printf("%s:\n", path);
+      print_directory(image_file, superblock, base_offset, inode);
    }
    else if ((inode->mode & FILE_TYPE_MASK) == REGULAR_FILE) {
       
@@ -104,7 +114,8 @@ int main(int argc, char *argv[]) {
                                          base_offset, image_file);
    
    
-   list_contents_of_inode(specified_inode);
+   list_contents_of_inode(specified_inode, search_path, image_file,
+                          superblock, base_offset);
    
    return 0;
 }

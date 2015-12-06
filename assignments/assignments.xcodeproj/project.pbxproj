@@ -18,7 +18,9 @@
 		C9BA5B501BE159B400A761FC /* dining.c in Sources */ = {isa = PBXBuildFile; fileRef = C9BA5B4F1BE159B400A761FC /* dining.c */; };
 		C9E27FED1C12759B00344977 /* min_common.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FEC1C12759B00344977 /* min_common.c */; };
 		C9E27FF31C1287A200344977 /* minls.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FF21C1287A200344977 /* minls.c */; };
-		C9E27FF51C1287B000344977 /* minget.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FF41C1287B000344977 /* minget.c */; };
+		C9E27FFD1C13DF9500344977 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FFC1C13DF9500344977 /* main.c */; };
+		C9E280011C13DF9C00344977 /* minget.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FF41C1287B000344977 /* minget.c */; };
+		C9E280021C13DFA000344977 /* min_common.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E27FEC1C12759B00344977 /* min_common.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -76,6 +78,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		C9E27FF81C13DF9500344977 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -119,6 +130,8 @@
 		C9E27FF11C12790800344977 /* min_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = min_common.h; sourceTree = "<group>"; };
 		C9E27FF21C1287A200344977 /* minls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = minls.c; sourceTree = "<group>"; };
 		C9E27FF41C1287B000344977 /* minget.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = minget.c; sourceTree = "<group>"; };
+		C9E27FFA1C13DF9500344977 /* program5_minget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = program5_minget; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9E27FFC1C13DF9500344977 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,6 +177,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C9E27FF71C13DF9500344977 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -190,6 +210,7 @@
 				C96B30621BB61DFE001C22BE /* lab1 */,
 				C9BA5B4E1BE159B400A761FC /* program3 */,
 				C9E27FEB1C12759B00344977 /* my_program5 */,
+				C9E27FFB1C13DF9500344977 /* program5_minget */,
 				C92A51B61BB09296002BE266 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -203,6 +224,7 @@
 				C9BA5B4D1BE159B400A761FC /* program3 */,
 				C97F0C381C0D820500915E64 /* program5 */,
 				C9E27FEA1C12759B00344977 /* my_program5 */,
+				C9E27FFA1C13DF9500344977 /* program5_minget */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -278,6 +300,14 @@
 				C9E27FF41C1287B000344977 /* minget.c */,
 			);
 			path = my_program5;
+			sourceTree = "<group>";
+		};
+		C9E27FFB1C13DF9500344977 /* program5_minget */ = {
+			isa = PBXGroup;
+			children = (
+				C9E27FFC1C13DF9500344977 /* main.c */,
+			);
+			path = program5_minget;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -385,6 +415,23 @@
 			productReference = C9E27FEA1C12759B00344977 /* my_program5 */;
 			productType = "com.apple.product-type.tool";
 		};
+		C9E27FF91C13DF9500344977 /* program5_minget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C9E280001C13DF9500344977 /* Build configuration list for PBXNativeTarget "program5_minget" */;
+			buildPhases = (
+				C9E27FF61C13DF9500344977 /* Sources */,
+				C9E27FF71C13DF9500344977 /* Frameworks */,
+				C9E27FF81C13DF9500344977 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = program5_minget;
+			productName = program5_minget;
+			productReference = C9E27FFA1C13DF9500344977 /* program5_minget */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -412,6 +459,9 @@
 					C9E27FE91C12759B00344977 = {
 						CreatedOnToolsVersion = 7.1.1;
 					};
+					C9E27FF91C13DF9500344977 = {
+						CreatedOnToolsVersion = 7.1.1;
+					};
 				};
 			};
 			buildConfigurationList = C92A51B01BB09296002BE266 /* Build configuration list for PBXProject "assignments" */;
@@ -432,6 +482,7 @@
 				C9BA5B4C1BE159B400A761FC /* program3 */,
 				C97F0C371C0D820500915E64 /* program5 */,
 				C9E27FE91C12759B00344977 /* my_program5 */,
+				C9E27FF91C13DF9500344977 /* program5_minget */,
 			);
 		};
 /* End PBXProject section */
@@ -487,7 +538,16 @@
 			files = (
 				C9E27FED1C12759B00344977 /* min_common.c in Sources */,
 				C9E27FF31C1287A200344977 /* minls.c in Sources */,
-				C9E27FF51C1287B000344977 /* minget.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C9E27FF61C13DF9500344977 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9E280021C13DFA000344977 /* min_common.c in Sources */,
+				C9E27FFD1C13DF9500344977 /* main.c in Sources */,
+				C9E280011C13DF9C00344977 /* minget.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -673,6 +733,22 @@
 			};
 			name = Release;
 		};
+		C9E27FFE1C13DF9500344977 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C9E27FFF1C13DF9500344977 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -735,6 +811,15 @@
 			buildConfigurations = (
 				C9E27FEF1C12759B00344977 /* Debug */,
 				C9E27FF01C12759B00344977 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C9E280001C13DF9500344977 /* Build configuration list for PBXNativeTarget "program5_minget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9E27FFE1C13DF9500344977 /* Debug */,
+				C9E27FFF1C13DF9500344977 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
