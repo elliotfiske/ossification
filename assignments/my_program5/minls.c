@@ -64,7 +64,7 @@ void print_directory(FILE *image_file, superblock_t superblock,
       
          print_permission_string(node->mode);
          printf("%10lu", (unsigned long)node->size);
-         printf(" %s\n", curr_entry->name);
+         printf(" /%s\n", curr_entry->name);
       }
       
       curr_entry ++;
