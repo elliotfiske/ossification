@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
                                &search_path, &output_path);
    
    base_offset = get_partition_offset(partition_num, subpartition_num,
-                                      image_file);
+                                      image_file, 0);
    
    superblock = parse_superblock(base_offset, image_file);
    

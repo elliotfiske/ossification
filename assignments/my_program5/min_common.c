@@ -105,9 +105,50 @@ FILE *parse_arguments(int argc, char *argv[],
  *  the start of the data we're interested in.
  */
 uint32_t get_partition_offset(int partition_num, int subpartition_num,
-                              FILE *image_file) {
-   /* TODO: me */
-   return 0;
+                              FILE *image_file, uint32_t subpartition_offset) {
+   uint32_t partition_sig_1 = 0, partition_sig_2 = 0;
+   size_t bytes_read;
+   
+   uint32_t result;
+   
+   partition_entry_t partition_entry;
+   
+   if (partition_num != -1) {
+      /* Check partition table magic # */
+      fseek(image_file, VALID_PARTITION_CHECK, SEEK_SET);
+      fread(&partition_sig_1, 1, 1, image_file);
+      fread(&partition_sig_2, 1, 1, image_file);
+      
+      if (!(partition_sig_1 == BYTE510 && partition_sig_2 == BYTE511)) {
+         fprintf(stderr, "Not a valid partition table\n");
+         exit(EXIT_FAILURE);
+      }
+      
+      fseek(image_file, PARTITION_TABLE_LOC + subpartition_offset +
+                        sizeof(partition_entry_t) * partition_num, SEEK_SET);
+      bytes_read = fread(&partition_entry, 1, sizeof(partition_entry_t),
+                         image_file);
+      
+      if (bytes_read != sizeof(partition_entry_t)) {
+         printf("Couldn't read partition table\n");
+         exit(EXIT_FAILURE);
+      }
+      
+      if (partition_entry.type != PARTITION_TYPE) {
+         printf("Not a Minix partition\n");
+         exit(EXIT_FAILURE);
+      }
+      
+      result = (partition_entry.lFirst) * SECTOR_SIZE;
+      
+      if (subpartition_num != -1) {
+         /* Cleverly recurse to get subpartition */
+         result = get_partition_offset(subpartition_num, -1,
+                                        image_file, result);
+      }
+   }
+   
+   return result;
 }
 
 /* Prints the superblock contents */
@@ -157,7 +198,7 @@ superblock_t parse_superblock(uint32_t base_offset, FILE *image_file) {
    superblock_t result;
    size_t bytes_read;
    
-   fseek(image_file, START_OF_SUPERBLOCK + base_offset, SEEK_CUR);
+   fseek(image_file, START_OF_SUPERBLOCK + base_offset, SEEK_SET);
    bytes_read = fread(&result, 1, sizeof(superblock_t), image_file);
    
    if (bytes_read != sizeof(superblock_t)) {
@@ -166,7 +207,7 @@ superblock_t parse_superblock(uint32_t base_offset, FILE *image_file) {
    }
    
    if (result.magic != MINIX_MAGIC_NUMBER) {
-      printf("Bad magic number. (%x)\n", result.magic);
+      printf("Bad magic number. (0x%x)\n", result.magic);
       printf("This doesn't look like a MINIX filesystem.\n");
       exit(EXIT_FAILURE);
    }

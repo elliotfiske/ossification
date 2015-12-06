@@ -26,8 +26,17 @@ void d_printf(int vflag, const char *format, ...);
 /************************ FUN MINIX STRUCTS *************************/
 /********************************************************************/
 
+/* Magic number and offsets */
 #define START_OF_SUPERBLOCK 1024
 #define MINIX_MAGIC_NUMBER 0x4D5A
+#define VALID_PARTITION_CHECK 510
+#define BYTE510 0x55
+#define BYTE511 0xAA
+#define PARTITION_TABLE_LOC 0x1BE
+#define PARTITION_TYPE 0x81
+#define SECTOR_SIZE 512
+
+
 typedef struct superblock { /* Minix Version 3 Superblock
                      * this structure found in fs/super.h
                      * in minix 3.1.1
@@ -92,7 +101,7 @@ typedef struct partition_entry {
    uint8_t end_cyl;
    uint32_t lFirst; /* First sector (LBA addressing) */
    uint32_t size;
-} partition_entry_t;
+} __attribute__ ((__packed__)) partition_entry_t;
 
 typedef struct directory_entry {
    uint32_t inode_num;
@@ -111,7 +120,7 @@ FILE *parse_arguments(int argc, char *argv[],
                       char **path_1, char **path_2);
 
 uint32_t get_partition_offset(int partition_num, int subpartition_num,
-                              FILE *image_file);
+                              FILE *image_file, uint32_t subpartition_offset);
 
 superblock_t parse_superblock(uint32_t base_offset, FILE *image_file);
 

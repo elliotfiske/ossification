@@ -63,19 +63,19 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-p9"
-            isEnabled = "NO">
+            argument = "-p0"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-v"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-s3"
-            isEnabled = "NO">
+            argument = "-s2"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "TestImage"
+            argument = "HardDisk"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
