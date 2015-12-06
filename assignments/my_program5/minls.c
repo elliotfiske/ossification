@@ -45,9 +45,9 @@ void printPermissionString(uint16_t fileMode) {
 }
 
 /* Prints the LS information for a directory */
-void printDirectory(FILE *imageFile, struct directory_entry *entry,
-                    int numOfDirectories,
-                    struct superblock *block) {
+void print_directory(FILE *imageFile, struct directory_entry *entry,
+                     int numOfDirectories, struct superblock *block,
+                     uint32_t base_offset) {
    int i;
    struct inode *node;
    printf("%s\n", originalFileName);
@@ -102,6 +102,7 @@ int main(int argc, char *argv[]) {
    
    specified_inode = get_inode_from_path(search_path, superblock,
                                          base_offset, image_file);
+   
    
    list_contents_of_inode(specified_inode);
    

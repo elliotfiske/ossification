@@ -121,6 +121,10 @@ superblock_t parse_superblock(uint32_t base_offset, FILE *image_file);
 inode_t *inode_from_inode_num(int32_t inode_num, superblock_t superblock,
                               uint32_t base_offset, FILE *image_file);
 
+int directory_entries_from_inode(inode_t *inode, FILE *image_file,
+                                 superblock_t superblock, uint32_t base_offset,
+                                 directory_entry_t **result);
+
 inode_t *get_inode_from_path(char *path, superblock_t superblock,
                              uint32_t base_offset, FILE *image_file);
 
