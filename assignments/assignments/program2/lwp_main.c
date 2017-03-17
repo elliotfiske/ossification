@@ -140,7 +140,7 @@ void libraryList_remove(thread victim) {
 
 
 /**
- * Spawn a sexy new thread with the specified function to run,
+ * Spawn a sweet new thread with the specified function to run,
  *  arguments for the function, and requested stack size.
  */
 tid_t lwp_create(lwpfun functionToRun, void *arguments, size_t stackSize) {
